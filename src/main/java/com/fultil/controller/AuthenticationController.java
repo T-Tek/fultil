@@ -35,12 +35,14 @@ public class AuthenticationController {
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data);
     }
     @GetMapping("/activate-account")
+    @ResponseStatus(HttpStatus.OK)
     public Response confirm(@RequestParam String activationToken) throws MessagingException {
         authenticationService.activateAccount(activationToken);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, "Account activated successfully");
     }
 
     @PatchMapping("/change-password")
+    @ResponseStatus(HttpStatus.OK)
     public Response changePassword(@RequestBody @Valid ChangePasswordRequest request){
         authenticationService.changePassword(request);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, "Password changed successfully");
