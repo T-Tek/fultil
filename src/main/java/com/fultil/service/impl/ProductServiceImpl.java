@@ -32,12 +32,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
-        log.info("Received request to create a product with payload: {}", request);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            throw new ResourceNotFoundException("User is not authenticated");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResourceNotFoundException("User is not authenticated, can not create product");
         }
         User user = (User) authentication.getPrincipal();
+        log.info("Received request to create a product by: {} and payload {}", authentication.getName(), request);
 
 
         Product newProduct = Product.builder()
