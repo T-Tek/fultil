@@ -22,7 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().contains("/api/v1/product/{name}")){
+        if (request.getServletPath().contains("/api/v1/product")){
             filterChain.doFilter(request, response);
             return;
         }

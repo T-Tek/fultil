@@ -1,7 +1,9 @@
 package com.fultil.service.impl;
 
 import com.fultil.entity.Product;
+import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
+import com.fultil.enums.ProductStatus;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
@@ -14,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,8 +33,24 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse createProduct(ProductRequest request) {
         log.info("Received request to create a product with payload: {}", request);
-        Product newProduct = buildProductFromRequest(request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new ResourceNotFoundException("User is not authenticated");
+        }
+        User user = (User) authentication.getPrincipal();
+
+
+        Product newProduct = Product.builder()
+                .name(request.getName())
+                .price(request.getPrice())
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .quantity(1)
+                .status(ProductStatus.IN_STOCK)
+                .user(user)
+                .build();
         Product savedProduct = saveProduct(newProduct);
+        log.info("Product with name '{}' is saved ", request.getName());
         return convertToDto(savedProduct);
     }
     @Override
@@ -76,15 +96,6 @@ public class ProductServiceImpl implements ProductService {
         return getListOfCategoryFromEnum();
     }
 
-    private Product buildProductFromRequest(ProductRequest request) {
-        return Product.builder()
-                .name(request.getName())
-                .price(request.getPrice())
-                .category(request.getCategory())
-                .description(request.getDescription())
-                .sku(UserUtils.generateSku())
-                .build();
-    }
 
     private ProductResponse convertToDto(Product product) {
         return ProductResponse.builder()

@@ -6,6 +6,7 @@ import com.fultil.entity.AccountActivationToken;
 import com.fultil.entity.User;
 import com.fultil.enums.EmailTemplateName;
 import com.fultil.enums.ResponseCodeAndMessage;
+import com.fultil.enums.RoleType;
 import com.fultil.exceptions.DuplicateException;
 import com.fultil.exceptions.IncorrectPasswordException;
 import com.fultil.exceptions.ResourceNotFoundException;
@@ -27,8 +28,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +43,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
-    private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailService emailService;
@@ -57,15 +55,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("Request to create an account with email: " + userRequest.getEmail());
         validateUserInput(userRequest);
         try {
-            Role role = roleRepository.findByName("USER")
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found for role "));
+            List<Role> roles = new ArrayList<>();
+            Role defaultRole = roleRepository.findByName("ROLE_USER")
+                    .orElseThrow(() -> new ResourceNotFoundException("Error: Default role is not found."));
+            roles.add(defaultRole);
             User user = User.builder()
                     .firstName(userRequest.getFirstName())
                     .lastName(userRequest.getLastName())
                     .email(userRequest.getEmail())
                     .password(passwordEncoder.encode(userRequest.getPassword()))
                     .phoneNumber(userRequest.getPhoneNumber())
-                    .roles(List.of(role))
+                    .roles(roles)
                     .uniqueId(UserUtils.generateUniqueId())
                     .accountLocked(false)
                     .enabled(false)
@@ -198,9 +198,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void validateUserInput(UserRequest userRequest) {
         log.info("Validating user input.......");
-        if (userRequest == null) {
-            throw new IllegalArgumentException("UserRequest cannot be null or empty.");
-        }
+        Objects.requireNonNull(userRequest, "UserRequest cannot be null or empty.");
 
         String email = userRequest.getEmail();
         if (isUserExists(email)) {

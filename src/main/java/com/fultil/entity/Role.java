@@ -1,15 +1,13 @@
 package com.fultil.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fultil.enums.Permissions;
+import com.fultil.enums.RoleType;
+import com.fultil.enums.permissions.AdminPermissions;
+import com.fultil.enums.permissions.UserRolePermissions;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -23,17 +21,22 @@ public class Role {
     private Long id;
     private String name;
 
-    @ElementCollection(targetClass = Permissions.class)
+
+    @ElementCollection(targetClass = UserRolePermissions.class)
     @Enumerated(EnumType.STRING)
-    private Set<Permissions> permissions;
+    private List<UserRolePermissions> userRolePermissions;
+
+    @ElementCollection(targetClass = AdminPermissions.class)
+    @Enumerated(EnumType.STRING)
+    private List<AdminPermissions> adminPermissions;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private RoleType roleType;
 
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     List<User> users;
-    @CreatedDate
-    private LocalDate createdDate;
-    @LastModifiedDate
-    private LocalDate updateDate;
 
 
 }

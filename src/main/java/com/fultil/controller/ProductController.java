@@ -18,12 +18,11 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_USER')")
 @RequestMapping("/api/v1/product")
 public class ProductController {
     private final ProductService productService;
 
-
-    @PreAuthorize("hasAuthority('CREATE_PRODUCT')")
     @PostMapping("/create")
     public Response createProduct(@RequestBody ProductRequest productRequest){
         ProductResponse productResponse = productService.createProduct(productRequest);

@@ -23,8 +23,8 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public Response register(@RequestBody @Valid UserRequest vendorRequest) throws MessagingException {
-        String data = authenticationService.register(vendorRequest);
+    public Response register(@RequestBody @Valid UserRequest userRequest) throws MessagingException {
+        String data = authenticationService.register(userRequest);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data);
     }
 

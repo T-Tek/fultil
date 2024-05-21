@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             CorsConfiguration corsConfig = new CorsConfiguration();
-                            corsConfig.setAllowedOrigins(List.of("http://yourfrontend.com"));
+                           // corsConfig.setAllowedOrigins(List.of("http://yourfrontend.com"));
                             corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                             corsConfig.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                             return corsConfig;
@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/auth/change-password").authenticated()
+                        .requestMatchers("/api/v1/product/**").authenticated()
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest()
                         .authenticated()
