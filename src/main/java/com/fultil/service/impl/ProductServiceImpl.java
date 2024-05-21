@@ -37,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("User is not authenticated, can not create product");
         }
         User user = (User) authentication.getPrincipal();
-        log.info("Received request to create a product by: {} and payload {}", authentication.getName(), request);
+        log.info("Received request to create product with name: {} by: {}",request.getName(), authentication.getName());
 
 
         Product newProduct = Product.builder()
@@ -45,8 +45,8 @@ public class ProductServiceImpl implements ProductService {
                 .price(request.getPrice())
                 .category(request.getCategory())
                 .description(request.getDescription())
-                .quantity(1)
-                .status(ProductStatus.IN_STOCK)
+                .quantity(request.getQuantity())
+              //  .status(ProductStatus.valueOf("IN_STOCK"))
                 .user(user)
                 .build();
         Product savedProduct = saveProduct(newProduct);

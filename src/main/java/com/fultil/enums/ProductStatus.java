@@ -1,15 +1,12 @@
 package com.fultil.enums;
 
-import lombok.Getter;
-
-@Getter
 public enum ProductStatus {
-    IN_STOCK("In stock"),
-    OUT_OF_STOCK("Out of stock");
+    IN_STOCK("IN_STOCK"),
+    OUT_OF_STOCK("OUT_OF_STOCK");
 
-    private final String message;
+    public final String value;
 
-    ProductStatus(String message) {
-        this.message = message;
+    ProductStatus(String value) {
+        this.value = value;
     }
 }

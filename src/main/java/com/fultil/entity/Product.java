@@ -31,10 +31,10 @@ public class Product extends Auditable<String> {
     private User user;
 
     private Integer quantity;
-    private String image;
+//    private String image;
 
-    @Enumerated(EnumType.STRING)
-    private ProductStatus status;
+//    @Enumerated(EnumType.STRING)
+//    private ProductStatus status;
 
     @OneToMany
     private List<Review> reviews;

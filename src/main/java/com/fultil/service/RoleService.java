@@ -46,16 +46,16 @@ public class RoleService {
         roleRepository.save(role);
     }
 
-    public void makeAdmin(Long userId) {
-        Optional<Role> optionalRole = roleRepository.findByName("ROLE_ADMIN");
-        Role adminRole = optionalRole.orElseThrow(() -> new IllegalStateException("Admin role not found"));
-
-        Optional<User> optionalUser = userRepository.findById(userId);
-        User user = optionalUser.orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-        user.getRoles().removeIf(role -> role.getName().equals("USER"));
-
-        user.getRoles().add(adminRole);
-        userRepository.save(user);
-    }
+//    public void makeAdmin(Long userId) {
+//        Optional<Role> optionalRole = roleRepository.findByName("ROLE_ADMIN");
+//        Role adminRole = optionalRole.orElseThrow(() -> new IllegalStateException("Admin role not found"));
+//
+//        Optional<User> optionalUser = userRepository.findById(userId);
+//        User user = optionalUser.orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+//
+//        user.getRoles().removeIf(role -> role.getName().equals("USER"));
+//
+//        user.getRoles().add(adminRole);
+//        userRepository.save(user);
+//    }
 }
