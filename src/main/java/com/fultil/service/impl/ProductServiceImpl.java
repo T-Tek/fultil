@@ -69,32 +69,34 @@ public class ProductServiceImpl implements ProductService {
         Authentication authentication = (UsernamePasswordAuthenticationToken) creator;
         User currentUser = (User) authentication.getPrincipal();
         String userEmail = currentUser.getEmail();
-        log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
+
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Product> productPage = null;
         if (Objects.isNull(name)){
+            log.info("Request received to get products with page {}, and size {}. Requested by user with email '{}'.", page, size, userEmail);
             productPage = productRepository.findAllByCreatedBy(currentUser.getEmail(), pageable);
         }else {
+            log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
             productPage = productRepository.findProductByCreator(name, currentUser.getEmail(), pageable);
         }
         if (productPage.isEmpty()){
-            log.warn("No products found for name");
+            log.warn("No products found.");
             throw new ResourceNotFoundException("No record found");
         }
-        List<ProductResponse> productList = new ArrayList<>();
+        List<ProductResponse> products = new ArrayList<>();
 
         for (Product product : productPage) {
-            productList.add(convertToResponseDto(product));
+            products.add(convertToResponseDto(product));
         }
         PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
 
             pageResponse.setTotalElements(productPage.getNumberOfElements());
             pageResponse.setTotalPages(productPage.getTotalPages());
             pageResponse.setHasNext(productPage.hasNext());
-            pageResponse.setContents(productList);
+            pageResponse.setContents(products);
 
-            log.info("Retrieved {} products for name '{}' (Page {}/{}).", productList.size(), name, productPage.getNumber(), productPage.getTotalPages());
+            log.info("Retrieved {} products for name '{}' (Page {}/{}).", products.size(), name, productPage.getNumber(), productPage.getTotalPages());
 
             return pageResponse;
     }
