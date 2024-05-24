@@ -1,7 +1,9 @@
 package com.fultil.utils;
 
+import com.fultil.entity.User;
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.payload.response.Response;
+import com.fultil.payload.response.UserProductResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Year;
@@ -55,6 +57,20 @@ public class UserUtils {
             log.info("Generated response: Response Code --> {}, Message --> {}, Data --> {}", response.getResponseCode(), response.getMessage(), response.getData());
             return response;
         }
+
+    public static UserProductResponse generateUserResponse(ResponseCodeAndMessage responseCodeAndMessage, String userEmail, Object data) {
+        UserProductResponse userProductResponse = UserProductResponse.builder()
+                .userEmail(userEmail)
+                .response(Response.builder()
+                        .responseCode(responseCodeAndMessage.code)
+                        .message(responseCodeAndMessage.message)
+                        .data(data)
+                        .build())
+                .build();
+        log.info("Generated response: Response Code --> {}, Message --> {}, Data --> {}", userProductResponse.getResponse().getResponseCode(), userProductResponse.getResponse().getMessage(), userProductResponse.getResponse().getData());
+        return userProductResponse;
+    }
+
     }
 
 

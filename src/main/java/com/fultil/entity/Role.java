@@ -22,11 +22,11 @@ public class Role {
     private String name;
 
 
-    @ElementCollection(targetClass = UserRolePermissions.class)
+    @ElementCollection(targetClass = UserRolePermissions.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private List<UserRolePermissions> userRolePermissions;
 
-    @ElementCollection(targetClass = AdminPermissions.class)
+    @ElementCollection(targetClass = AdminPermissions.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private List<AdminPermissions> adminPermissions;
 
@@ -37,6 +37,4 @@ public class Role {
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     List<User> users;
-
-
 }

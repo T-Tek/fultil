@@ -3,25 +3,27 @@ package com.fultil.service.impl;
 import com.fultil.entity.Product;
 import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
-import com.fultil.enums.ProductStatus;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ProductResponse;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.ProductService;
-import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,32 +53,39 @@ public class ProductServiceImpl implements ProductService {
                 .build();
         Product savedProduct = saveProduct(newProduct);
         log.info("Product with name '{}' is saved ", request.getName());
-        return convertToDto(savedProduct);
+        return convertToResponseDto(savedProduct);
     }
     @Override
     public List<ProductResponse> getProductsByCategory(ProductCategory category) {
         List<ProductResponse> responses = new ArrayList<>();
         List<Product> productList = productRepository.findAllByCategory(category);
         for (Product product : productList){
-            responses.add(convertToDto(product));
+            responses.add(convertToResponseDto(product));
         }
         return responses;
     }
     @Override
-    public PageResponse<List<ProductResponse>> findAllProducts(String name, int page, int size) {
-        log.info("Request received to get products with name '{}', page {}, and size {}.", name, page, size);
+    public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal creator) {
+        Authentication authentication = (UsernamePasswordAuthenticationToken) creator;
+        User currentUser = (User) authentication.getPrincipal();
+        String userEmail = currentUser.getEmail();
+        log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
 
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<Product> productPage = productRepository.findAllByName(name, pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Product> productPage = null;
+        if (Objects.isNull(name)){
+            productPage = productRepository.findAllByCreatedBy(currentUser.getEmail(), pageable);
+        }else {
+            productPage = productRepository.findProductByCreator(name, currentUser.getEmail(), pageable);
+        }
         if (productPage.isEmpty()){
-            log.warn("No products found for name '{}'.", name);
+            log.warn("No products found for name");
             throw new ResourceNotFoundException("No record found");
         }
         List<ProductResponse> productList = new ArrayList<>();
 
         for (Product product : productPage) {
-            productList.add(convertToDto(product));
+            productList.add(convertToResponseDto(product));
         }
         PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
 
@@ -96,8 +105,63 @@ public class ProductServiceImpl implements ProductService {
         return getListOfCategoryFromEnum();
     }
 
+    @Override
+    public PageResponse<List<ProductResponse>> getAllProducts(int page, int size) {
+        log.info("Request received to get products with page {}, and size {}.", page, size);
 
-    private ProductResponse convertToDto(Product product) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<Product> productPage = productRepository.findAll(pageable);
+        if (productPage.isEmpty()){
+            log.warn("No products found");
+            throw new ResourceNotFoundException("No record found");
+        }
+        List<ProductResponse> productResponseList = new ArrayList<>();
+
+        for (Product product : productPage) {
+            productResponseList.add(convertToResponseDto(product));
+        }
+        PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
+
+        pageResponse.setTotalElements(productPage.getNumberOfElements());
+        pageResponse.setTotalPages(productPage.getTotalPages());
+        pageResponse.setHasNext(productPage.hasNext());
+        pageResponse.setContents(productResponseList);
+
+        log.info("Retrieved {} products for (Page {}/{}).", productResponseList.size(), productPage.getNumber(), productPage.getTotalPages());
+
+        return pageResponse;
+    }
+
+    @Override
+    public PageResponse<List<ProductResponse>> searchProductsByName(String name, int page, int size) {
+        log.info("Request received to get products with name {} page {}, and size {}.", name, page, size);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<Product> productPage = productRepository.findAllByNameContainingIgnoreCase(name, pageable);
+        if (productPage.isEmpty()){
+            log.warn("No products found");
+            throw new ResourceNotFoundException("No record found");
+        }
+        List<ProductResponse> productResponseList = new ArrayList<>();
+
+        for (Product product : productPage) {
+            productResponseList.add(convertToResponseDto(product));
+        }
+        PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
+
+        pageResponse.setTotalElements(productPage.getNumberOfElements());
+        pageResponse.setTotalPages(productPage.getTotalPages());
+        pageResponse.setHasNext(productPage.hasNext());
+        pageResponse.setContents(productResponseList);
+
+        log.info("Retrieved {} products for (Page {}/{}).", productResponseList.size(), productPage.getNumber(), productPage.getTotalPages());
+
+        return pageResponse;
+    }
+
+    private ProductResponse convertToResponseDto(Product product) {
         return ProductResponse.builder()
                 .name(product.getName())
                 .price(product.getPrice())

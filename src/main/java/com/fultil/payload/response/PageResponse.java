@@ -1,5 +1,6 @@
 package com.fultil.payload.response;
 
+import com.fultil.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

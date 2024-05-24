@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/auth/change-password").authenticated()
+                        .requestMatchers("/api/v1/product/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .anyRequest()
                         .authenticated()

@@ -1,5 +1,6 @@
 package com.fultil.payload.response;
 
+import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
 import lombok.*;
 
