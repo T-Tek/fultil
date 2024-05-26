@@ -59,11 +59,19 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getProductsByCategory(ProductCategory category) {
         List<ProductResponse> responses = new ArrayList<>();
         List<Product> productList = productRepository.findAllByCategory(category);
-        for (Product product : productList){
+
+        if (productList.isEmpty()) {
+            log.info("No products found for category: " + category);
+            throw new ResourceNotFoundException("No products found for category: " + category);
+        }
+
+        for (Product product : productList) {
             responses.add(convertToResponseDto(product));
         }
+
         return responses;
     }
+
     @Override
     public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal creator) {
         Authentication authentication = (UsernamePasswordAuthenticationToken) creator;
@@ -114,10 +122,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
         Page<Product> productPage = productRepository.findAll(pageable);
-        if (productPage.isEmpty()){
-            log.warn("No products found");
-            throw new ResourceNotFoundException("No record found");
-        }
+        checkIfProductPageIsNotEmpty(productPage);
         List<ProductResponse> productResponseList = new ArrayList<>();
 
         for (Product product : productPage) {
@@ -142,10 +147,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
         Page<Product> productPage = productRepository.findAllByNameContainingIgnoreCase(name, pageable);
-        if (productPage.isEmpty()){
-            log.warn("No products found");
-            throw new ResourceNotFoundException("No record found");
-        }
+        checkIfProductPageIsNotEmpty(productPage);
         List<ProductResponse> productResponseList = new ArrayList<>();
 
         for (Product product : productPage) {
@@ -175,6 +177,11 @@ public class ProductServiceImpl implements ProductService {
     private Product saveProduct(Product product) {
         log.info("Saving product with name: {}, price: {}, and category: {}", product.getName(), product.getPrice(), product.getCategory());
         return productRepository.save(product);
+    }
+    private void checkIfProductPageIsNotEmpty(Page<Product> productPage){
+        if (productPage.isEmpty()){
+            throw new ResourceNotFoundException("Product not found");
+        }
     }
 
     private List<String> getListOfCategoryFromEnum(){
