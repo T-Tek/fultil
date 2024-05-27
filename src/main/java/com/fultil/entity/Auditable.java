@@ -1,4 +1,4 @@
-package com.fultil.Auditables;
+package com.fultil.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

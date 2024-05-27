@@ -9,6 +9,7 @@ import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ProductResponse;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.ProductService;
+import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
                 .category(request.getCategory())
                 .description(request.getDescription())
                 .quantity(request.getQuantity())
+                .skuCode(UserUtils.generateSku(request.getName()))
               //  .status(ProductStatus.valueOf("IN_STOCK"))
                 .user(user)
                 .build();

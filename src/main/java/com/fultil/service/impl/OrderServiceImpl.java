@@ -23,9 +23,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void placeOrder(OrderRequest orderRequest) {
-        log.info("Starting to create order with {} line items.", orderRequest.getOrderLineItems().size());
+        log.info("Starting to create order with {} line items.", orderRequest.getOrderLineItemsRequests().size());
 
-        List<OrderLineItems> orderLineItemsList = convertToOrderLineItemsEntity(orderRequest.getOrderLineItems());
+        List<OrderLineItems> orderLineItemsList = convertToOrderLineItemsEntity(orderRequest.getOrderLineItemsRequests());
+
         Order newOrder = Order.builder()
                 .orderNumber(UUID.randomUUID().toString())
                 .orderLineItems(orderLineItemsList)

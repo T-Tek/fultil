@@ -12,6 +12,14 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    boolean existsBySkuCode(String skuCode);
+
+    Page<Product> findAllByCreatedBy(String createdBy, Pageable pageable);
+    Page<Product> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<Product> findAllByNameIgnoreCase(String name, Pageable pageable);
+    List<Product> findAllByCategory(ProductCategory category);
+
     @Query("""
            SELECT product
            FROM Product product
@@ -21,8 +29,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findProductByCreator(@Param("name") String name,
                                        @Param("createdBy") String createdBy,
                                        Pageable pageable);
-    Page<Product> findAllByCreatedBy(String createdBy, Pageable pageable);
-    Page<Product> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
-    Page<Product> findAllByNameIgnoreCase(String name, Pageable pageable);
-    List<Product> findAllByCategory(ProductCategory category);
 }

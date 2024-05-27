@@ -1,8 +1,6 @@
 package com.fultil.entity;
 
-import com.fultil.Auditables.Auditable;
 import com.fultil.enums.ProductCategory;
-import com.fultil.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -21,6 +19,7 @@ public class Product extends Auditable<String> {
 
     private String name;
     private BigDecimal price;
+    private String skuCode;
 
     @Enumerated(EnumType.STRING)
     private ProductCategory category;

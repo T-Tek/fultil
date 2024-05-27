@@ -29,15 +29,21 @@ public class UserUtils {
             }
         }
 
-    public static String generateSku() {
-        log.info("Generating product ID");
+    public static String generateSku(String productName) {
+        log.info("Generating product skuCode");
         try {
-            UUID uuid = UUID.randomUUID();
-            String uniqueId = uuid.toString().toUpperCase().replaceAll("-", "").substring(0, 4);
-            String prefix = "PROD-";
-            return prefix + uniqueId;
+            String sku = productName.replace(" ", "-");
+
+            if (!productName.contains(" ")) {
+                UUID uuid = UUID.randomUUID();
+                String uniqueId = uuid.toString().toUpperCase().replace("-", "").substring(0, 4);
+                sku += uniqueId;
+                log.info("UUID generated and appended: {}", uniqueId);
+            }
+
+            return sku;
         } catch (Exception e) {
-            log.error("Error generating product ID: {}", e.getMessage());
+            log.error("Error generating product ID: {}", e.getMessage(), e);
             throw new RuntimeException("Error generating product ID", e);
         }
     }
@@ -57,20 +63,6 @@ public class UserUtils {
             log.info("Generated response: Response Code --> {}, Message --> {}, Data --> {}", response.getResponseCode(), response.getMessage(), response.getData());
             return response;
         }
-
-    public static UserProductResponse generateUserResponse(ResponseCodeAndMessage responseCodeAndMessage, String userEmail, Object data) {
-        UserProductResponse userProductResponse = UserProductResponse.builder()
-                .userEmail(userEmail)
-                .response(Response.builder()
-                        .responseCode(responseCodeAndMessage.code)
-                        .message(responseCodeAndMessage.message)
-                        .data(data)
-                        .build())
-                .build();
-        log.info("Generated response: Response Code --> {}, Message --> {}, Data --> {}", userProductResponse.getResponse().getResponseCode(), userProductResponse.getResponse().getMessage(), userProductResponse.getResponse().getData());
-        return userProductResponse;
-    }
-
     }
 
 
