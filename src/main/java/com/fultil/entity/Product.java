@@ -21,8 +21,9 @@ public class Product extends Auditable<String> {
     private BigDecimal price;
     private String skuCode;
 
-    @Enumerated(EnumType.STRING)
-    private ProductCategory category;
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private ProductCategoryEntity category;
 
     private String description;
 

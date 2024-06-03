@@ -1,11 +1,15 @@
 package com.fultil.controller;
 
+import com.fultil.entity.ProductCategoryEntity;
 import com.fultil.enums.ProductCategory;
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
+import com.fultil.payload.response.ProductCategoryResponse;
 import com.fultil.payload.response.ProductResponse;
 import com.fultil.payload.response.Response;
+import com.fultil.repository.ProductCategoryRepository;
+import com.fultil.service.CategoryService;
 import com.fultil.service.ProductService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +27,12 @@ import java.util.List;
 @RequestMapping("/api/v1/product")
 public class ProductController {
     private final ProductService productService;
+    private final CategoryService categoryService;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/create")
-    public Response createProduct(@RequestBody ProductRequest productRequest){
-        ProductResponse productResponse = productService.createProduct(productRequest);
+    public Response createProduct(@RequestBody ProductRequest productRequest, String categoryName){
+        ProductResponse productResponse = productService.createProduct(productRequest, categoryName);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, productResponse);
     }
 
@@ -60,9 +65,9 @@ public class ProductController {
     }
 
 
-    @GetMapping("/{category}")
-    public Response getAllCategory(@PathVariable ProductCategory category){
-        List<ProductResponse> categories = productService.getProductsByCategory(category);
+    @GetMapping("/category")
+    public Response getAllCategory(){
+        List<ProductCategoryResponse> categories = categoryService.getAllCategories();
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, categories);
     }
 }

@@ -1,12 +1,14 @@
 package com.fultil.service.impl;
 
 import com.fultil.entity.Product;
+import com.fultil.entity.ProductCategoryEntity;
 import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ProductResponse;
+import com.fultil.repository.ProductCategoryRepository;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.ProductService;
 import com.fultil.utils.UserUtils;
@@ -32,9 +34,10 @@ import java.util.Objects;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductCategoryRepository productCategoryRepository;
 
     @Override
-    public ProductResponse createProduct(ProductRequest request) {
+    public ProductResponse createProduct(ProductRequest request, String categoryName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResourceNotFoundException("User is not authenticated, can not create product");
@@ -42,11 +45,14 @@ public class ProductServiceImpl implements ProductService {
         User user = (User) authentication.getPrincipal();
         log.info("Received request to create product with name: {} by: {}",request.getName(), authentication.getName());
 
+        ProductCategoryEntity category = productCategoryRepository.findByName(categoryName)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: ".concat(categoryName)));
+
 
         Product newProduct = Product.builder()
                 .name(request.getName())
                 .price(request.getPrice())
-                .category(request.getCategory())
+                .category(category)
                 .description(request.getDescription())
                 .quantity(request.getQuantity())
                 .skuCode(UserUtils.generateSku(request.getName()))
@@ -171,7 +177,7 @@ public class ProductServiceImpl implements ProductService {
         return ProductResponse.builder()
                 .name(product.getName())
                 .price(product.getPrice())
-                .category(product.getCategory())
+                .category(convertCategoryEntityToEnum(product.getCategory()))
                 .description(product.getDescription())
                 .build();
     }
@@ -184,6 +190,11 @@ public class ProductServiceImpl implements ProductService {
         if (productPage.isEmpty()){
             throw new ResourceNotFoundException("Product not found");
         }
+    }
+
+    private ProductCategory convertCategoryEntityToEnum(ProductCategoryEntity categoryEntity) {
+        String categoryName = categoryEntity.getName().toUpperCase().replace(" ", "_");
+        return ProductCategory.valueOf(categoryName);
     }
 
     private List<String> getListOfCategoryFromEnum(){

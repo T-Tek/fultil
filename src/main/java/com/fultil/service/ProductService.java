@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public interface ProductService {
-    ProductResponse createProduct(ProductRequest request);
+    ProductResponse createProduct(ProductRequest request, String categoryName);
     List<ProductResponse> getProductsByCategory(ProductCategory category);
     PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal principal);
     List<String> getAllProductCategories();

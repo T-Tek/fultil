@@ -1,4 +1,4 @@
-package com.fultil.service;
+package com.fultil.service.impl;
 
 import com.fultil.entity.Role;
 import com.fultil.entity.User;
