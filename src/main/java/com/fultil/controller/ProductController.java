@@ -12,6 +12,7 @@ import com.fultil.utils.UserUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ROLE_VENDOR')")
     @PostMapping("/create")
+    @ResponseStatus(HttpStatus.CREATED)
     public Response createProduct(@RequestBody @Valid ProductRequest productRequest){
         ProductResponse productResponse = productService.createProduct(productRequest);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, productResponse);
@@ -36,6 +38,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/user/products")
+    @ResponseStatus(HttpStatus.OK)
     public Response getProductsByCreator(@RequestParam(required = false) String productName,
                                          @RequestParam int page,
                                          @RequestParam int size,
@@ -44,17 +47,20 @@ public class ProductController {
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, products);
     }
     @GetMapping("/all/{category}")
+    @ResponseStatus(HttpStatus.OK)
     public Response getProductsByCategory(@PathVariable String category, @RequestParam int page, @RequestParam int size){
         PageResponse<List<ProductResponse>> products = productService.getProductsByCategory(category, page, size );
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, products);
     }
     @GetMapping("/all")
+    @ResponseStatus(HttpStatus.OK)
     public Response getAllProducts(@RequestParam int page, @RequestParam int size){
         PageResponse<List<ProductResponse>> products = productService.getAllProducts(page, size );
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, products);
     }
 
     @GetMapping("/search/{name}")
+    @ResponseStatus(HttpStatus.OK)
     public Response search(@PathVariable String name, @RequestParam int page, @RequestParam int size){
         PageResponse<List<ProductResponse>> products = productService.searchProductsByName(name, page, size );
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, products);
@@ -62,6 +68,7 @@ public class ProductController {
 
 
     @GetMapping("/category")
+    @ResponseStatus(HttpStatus.OK)
     public Response getAllCategory(){
         List<ProductCategoryResponse> categories = categoryService.getAllCategories();
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, categories);
@@ -69,6 +76,7 @@ public class ProductController {
 
     //redis cache testing here
     @GetMapping("/testCache")
+    @ResponseStatus(HttpStatus.OK)
     public String testCache(@RequestParam int page, @RequestParam int size) {
         long start = System.currentTimeMillis();
         PageResponse<List<ProductResponse>> response1 = productService.getAllProducts(page, size);

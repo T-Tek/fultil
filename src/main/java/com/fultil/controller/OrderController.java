@@ -20,7 +20,7 @@ public class OrderController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/place")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public Response placeOrder(@RequestBody OrderRequest orderRequest){
          orderService.placeOrder(orderRequest);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, "Order placed successfully");
