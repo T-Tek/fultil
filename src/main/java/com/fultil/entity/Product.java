@@ -1,8 +1,11 @@
 package com.fultil.entity;
 
 import com.fultil.enums.ProductCategory;
+import com.fultil.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.redis.core.RedisHash;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -33,9 +36,13 @@ public class Product extends Auditable<String> {
     private Integer quantity;
 //    private String image;
 
-//    @Enumerated(EnumType.STRING)
-//    private ProductStatus status;
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;
 
     @OneToMany
     private List<Review> reviews;
+
+    public ProductStatus getProductStatus(){
+        return quantity < 1 ? ProductStatus.OUT_OF_STOCK : ProductStatus.IN_STOCK;
+    }
 }

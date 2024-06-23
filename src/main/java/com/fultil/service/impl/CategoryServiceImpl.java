@@ -6,6 +6,7 @@ import com.fultil.repository.ProductCategoryRepository;
 import com.fultil.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final ProductCategoryRepository productCategoryRepository;
+
+    @Cacheable(value = "items", key = "#id")
     @Override
     public List<ProductCategoryResponse> getAllCategories() {
         List<ProductCategoryResponse> responses = new ArrayList<>();

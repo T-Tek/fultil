@@ -6,6 +6,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -17,6 +19,6 @@ public class OrderLineItems {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String skuCode;
-    private String price;
+    private BigDecimal price;
     private Integer quantity;
 }

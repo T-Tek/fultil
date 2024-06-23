@@ -6,13 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class PageResponse<T> {
+public class PageResponse<T> implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private int totalElements;
     private int totalPages;
     private boolean hasNext;

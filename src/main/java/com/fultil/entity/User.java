@@ -45,6 +45,11 @@ public class User implements UserDetails, Principal {
     @JsonProperty("roles")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
     private List<Role> roles;
 
     @OneToMany(fetch = FetchType.EAGER)

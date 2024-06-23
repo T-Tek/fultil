@@ -5,6 +5,7 @@ import com.fultil.entity.OrderLineItems;
 import com.fultil.payload.request.OrderLineItemsRequest;
 import com.fultil.payload.request.OrderRequest;
 import com.fultil.repository.OrderRepository;
+import com.fultil.repository.ProductRepository;
 import com.fultil.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public void placeOrder(OrderRequest orderRequest) {

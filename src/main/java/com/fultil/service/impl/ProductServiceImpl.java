@@ -4,6 +4,7 @@ import com.fultil.entity.Product;
 import com.fultil.entity.ProductCategoryEntity;
 import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
+import com.fultil.enums.ProductStatus;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
@@ -14,6 +15,8 @@ import com.fultil.service.ProductService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,13 +40,15 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCategoryRepository productCategoryRepository;
 
     @Override
-    public ProductResponse createProduct(ProductRequest request, String categoryName) {
+    public ProductResponse createProduct(ProductRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResourceNotFoundException("User is not authenticated, can not create product");
         }
         User user = (User) authentication.getPrincipal();
         log.info("Received request to create product with name: {} by: {}",request.getName(), authentication.getName());
+
+        String categoryName = request.getCategory();
 
         ProductCategoryEntity category = productCategoryRepository.findByName(categoryName)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: ".concat(categoryName)));
@@ -56,30 +61,40 @@ public class ProductServiceImpl implements ProductService {
                 .description(request.getDescription())
                 .quantity(request.getQuantity())
                 .skuCode(UserUtils.generateSku(request.getName()))
-              //  .status(ProductStatus.valueOf("IN_STOCK"))
+                .status(ProductStatus.valueOf("IN_STOCK"))
                 .user(user)
                 .build();
         Product savedProduct = saveProduct(newProduct);
         log.info("Product with name '{}' is saved ", request.getName());
         return convertToResponseDto(savedProduct);
     }
-    @Override
-    public List<ProductResponse> getProductsByCategory(ProductCategory category) {
-        List<ProductResponse> responses = new ArrayList<>();
-        List<Product> productList = productRepository.findAllByCategory(category);
 
-        if (productList.isEmpty()) {
+
+ //   @Cacheable(value = "items", key = "#category + '-' + #page + '-' + #size")
+    @Override
+    public  PageResponse<List<ProductResponse>> getProductsByCategory(String category, int page, int size) {
+        List<ProductResponse> responses = new ArrayList<>();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productRepository.findAllByCategory(category, pageable);
+
+        if (productPage.isEmpty()) {
             log.info("No products found for category: " + category);
             throw new ResourceNotFoundException("No products found for category: " + category);
         }
 
-        for (Product product : productList) {
+        for (Product product : productPage) {
             responses.add(convertToResponseDto(product));
         }
 
-        return responses;
+        return new PageResponse<>(
+                productPage.getNumberOfElements(),
+                productPage.getTotalPages(),
+                productPage.hasNext(),
+                responses
+        );
     }
 
+  //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal creator) {
         Authentication authentication = (UsernamePasswordAuthenticationToken) creator;
@@ -117,12 +132,15 @@ public class ProductServiceImpl implements ProductService {
             return pageResponse;
     }
 
+
+//    @Cacheable(value = "items")
     @Override
     public List<String> getAllProductCategories() {
         log.info("Getting list of product categories........");
         return getListOfCategoryFromEnum();
     }
 
+    @Cacheable(value = "items", key = "#page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> getAllProducts(int page, int size) {
         log.info("Request received to get products with page {}, and size {}.", page, size);
@@ -148,6 +166,7 @@ public class ProductServiceImpl implements ProductService {
         return pageResponse;
     }
 
+ //   @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> searchProductsByName(String name, int page, int size) {
         log.info("Request received to get products with name {} page {}, and size {}.", name, page, size);
@@ -173,12 +192,56 @@ public class ProductServiceImpl implements ProductService {
         return pageResponse;
     }
 
+ //   @CachePut(value = "items", key = "#id + '-' + #productRequest")
+    @Override
+    public ProductResponse updateProduct(Long id, ProductRequest productRequest) {
+        log.info("Request to update Product with id: {} ", id);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.error("User is not authenticated, cannot update product with id: {}", id);
+            throw new ResourceNotFoundException("User is not authenticated, cannot update product");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        log.info("Received request to update product with name: {} by: {}", productRequest.getName(), authentication.getName());
+
+        String categoryName = productRequest.getCategory();
+        ProductCategoryEntity category = productCategoryRepository.findByName(categoryName)
+                .orElseThrow(() -> {
+                    log.error("Category not found: {}", categoryName);
+                    return new ResourceNotFoundException("Category not found: " + categoryName);
+                });
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Product with id {} not found", id);
+                    return new ResourceNotFoundException("Product with id " + id + " not found");
+                });
+
+        product.setName(productRequest.getName());
+        product.setPrice(productRequest.getPrice());
+        product.setQuantity(productRequest.getQuantity());
+        product.setCategory(category);
+        product.setDescription(productRequest.getDescription());
+        product.setUser(user);
+
+        Product savedProduct = saveProduct(product);
+        log.info("Product with id '{}' is updated and saved", id);
+
+        return convertToResponseDto(savedProduct);
+    }
+
+
     private ProductResponse convertToResponseDto(Product product) {
         return ProductResponse.builder()
                 .name(product.getName())
                 .price(product.getPrice())
                 .category(convertCategoryEntityToEnum(product.getCategory()))
+                .quantity(product.getQuantity())
+                .status(product.getProductStatus())
                 .description(product.getDescription())
+                .owner(product.getUser().getFirstName())
                 .build();
     }
 
@@ -188,7 +251,7 @@ public class ProductServiceImpl implements ProductService {
     }
     private void checkIfProductPageIsNotEmpty(Page<Product> productPage){
         if (productPage.isEmpty()){
-            throw new ResourceNotFoundException("Product not found");
+            throw new ResourceNotFoundException("No products found");
         }
     }
 
