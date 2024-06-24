@@ -1,5 +1,6 @@
 package com.fultil.payload.request;
 
+import com.fultil.entity.User;
 import lombok.*;
 
 import java.util.List;
@@ -11,4 +12,5 @@ import java.util.List;
 @Builder
 public class OrderRequest {
     private List<OrderLineItemsRequest> orderLineItemsRequests;
+    private User user;
 }

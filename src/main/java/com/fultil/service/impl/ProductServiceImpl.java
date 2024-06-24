@@ -2,6 +2,7 @@ package com.fultil.service.impl;
 
 import com.fultil.entity.Product;
 import com.fultil.entity.ProductCategoryEntity;
+import com.fultil.entity.Review;
 import com.fultil.entity.User;
 import com.fultil.enums.ProductCategory;
 import com.fultil.enums.ProductStatus;
@@ -9,9 +10,11 @@ import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ProductRequest;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ProductResponse;
+import com.fultil.payload.response.ReviewResponse;
 import com.fultil.repository.ProductCategoryRepository;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.ProductService;
+import com.fultil.service.ReviewService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +33,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final ReviewService reviewService;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
@@ -242,7 +247,13 @@ public class ProductServiceImpl implements ProductService {
                 .status(product.getProductStatus())
                 .description(product.getDescription())
                 .owner(product.getUser().getFirstName())
+                .reviewResponses(mapToReviewResponseList(product.getReviews()))
                 .build();
+    }
+    private List<ReviewResponse> mapToReviewResponseList(List<Review> reviews){
+        return reviews.stream()
+                .map(ReviewServiceImpl::mapToReviewResponse)
+                .toList();
     }
 
     private Product saveProduct(Product product) {

@@ -6,12 +6,13 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.util.List;
 
-@Entity
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 @Table(name = "orders")
 public class Order {
     @Id
@@ -21,5 +22,7 @@ public class Order {
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderLineItems> orderLineItems;
+    @ManyToOne
+    private User user;
 
 }

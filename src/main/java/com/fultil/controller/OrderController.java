@@ -2,6 +2,9 @@ package com.fultil.controller;
 
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.payload.request.OrderRequest;
+import com.fultil.payload.request.ReviewRequest;
+import com.fultil.payload.response.OrderResponse;
+import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.Response;
 import com.fultil.service.OrderService;
 import com.fultil.utils.UserUtils;
@@ -10,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -24,5 +29,13 @@ public class OrderController {
     public Response placeOrder(@RequestBody OrderRequest orderRequest){
          orderService.placeOrder(orderRequest);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, "Order placed successfully");
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/get")
+    @ResponseStatus(HttpStatus.OK)
+    public Response getAllOrders(@RequestParam int page, @RequestParam int size){
+        PageResponse<List<OrderResponse>> orders = orderService.getAllOrdersByCurrentUser(page, size);
+        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, orders);
     }
 }

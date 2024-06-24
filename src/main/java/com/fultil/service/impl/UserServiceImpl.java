@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
     public String becomeVendor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResourceNotFoundException("User is not authenticated, cannot create product");
+            throw new ResourceNotFoundException("User is not authenticated, cannot become a vendor");
         }
 
         User user = (User) authentication.getPrincipal();

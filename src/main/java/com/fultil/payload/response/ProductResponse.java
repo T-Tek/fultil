@@ -7,6 +7,7 @@ import lombok.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Setter
 @Getter
@@ -24,4 +25,5 @@ public class ProductResponse implements Serializable {
     private ProductStatus status;
     private String description;
     private String owner;
+    private List<ReviewResponse> reviewResponses;
 }
