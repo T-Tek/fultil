@@ -13,6 +13,7 @@ import com.fultil.repository.ProductRepository;
 import com.fultil.service.CartService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
@@ -30,6 +32,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse addToCart(CartItemsRequest cartItemRequest) {
+        log.info("Request to add product to cart");
         User user = UserUtils.getAuthenticatedUser();
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
 
@@ -49,6 +52,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse getCartByUser() {
         User user = UserUtils.getAuthenticatedUser();
+        log.info("Request to get cart by {}", user);
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
 
         return mapToCartResponse(cart);
@@ -57,6 +61,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public void clearCart() {
         User user = UserUtils.getAuthenticatedUser();
+        log.info("Request to clear cart by {}", user);
+
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
 
         cart.clearItems();
@@ -70,6 +76,7 @@ public class CartServiceImpl implements CartService {
         for (CartItemResponse cartItemResponse : cartResponse.getCartItemResponseList()) {
             totalPrice = totalPrice.add(cartItemResponse.getPrice().multiply(BigDecimal.valueOf(cartItemResponse.getQuantity())));
         }
+        log.info("Total price of cart items is ---------> {}", totalPrice);
         return totalPrice;
     }
 

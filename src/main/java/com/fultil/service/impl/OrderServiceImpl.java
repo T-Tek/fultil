@@ -60,36 +60,9 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(newOrder);
     }
-
-    private OrderItems mapToOrderLineItem(OrderItemRequest orderItemRequest) {
-        Product product = productRepository.findById(orderItemRequest.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        Integer availableQuantity = product.getQuantity();
-        Integer requestedQuantity = orderItemRequest.getQuantity();
-        if (requestedQuantity > availableQuantity) {
-            throw new ResourceNotFoundException("Only " + availableQuantity + " " + product.getName() + "(s) in stock.");
-        }
-
-        // updating the product's stock here
-        product.setQuantity(availableQuantity - requestedQuantity);
-        productRepository.save(product);
-
-        return OrderItems.builder()
-                .product(product)
-                .quantity(requestedQuantity)
-                .price(product.getPrice())  // Use the product price
-                .skuCode(product.getSkuCode())
-                .build();
-    }
-
     @Override
     public PageResponse<List<OrderResponse>> getAllOrdersByCurrentUser(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResourceNotFoundException("User is not authenticated, cannot view orders");
-        }
-
-        User user = (User) authentication.getPrincipal();
+        User user = UserUtils.getAuthenticatedUser();
         log.info("Request to get orders placed by {}", user.getEmail());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
@@ -109,6 +82,26 @@ public class OrderServiceImpl implements OrderService {
                 orderPage.hasNext(),
                 orderResponses
         );
+    }
+    private OrderItems mapToOrderLineItem(OrderItemRequest orderItemRequest) {
+        Product product = productRepository.findById(orderItemRequest.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Integer availableQuantity = product.getQuantity();
+        Integer requestedQuantity = orderItemRequest.getQuantity();
+        if (requestedQuantity > availableQuantity) {
+            throw new ResourceNotFoundException("Only " + availableQuantity + " " + product.getName() + "(s) in stock.");
+        }
+
+        // updating the product's stock here
+        product.setQuantity(availableQuantity - requestedQuantity);
+        productRepository.save(product);
+
+        return OrderItems.builder()
+                .product(product)
+                .quantity(requestedQuantity)
+                .price(product.getPrice())
+                .skuCode(product.getSkuCode())
+                .build();
     }
 
     private OrderResponse mapToOrderResponse(Order order) {

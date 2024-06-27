@@ -68,6 +68,7 @@ public class UserUtils {
         return response;
     }
     public static User getAuthenticatedUser() {
+        log.info("Checking if user is authenticated");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new ResourceNotFoundException("User is not authenticated, cannot perform operation");
