@@ -1,4 +1,4 @@
-package com.fultil.entity;
+package com.fultil.model;
 
 import jakarta.persistence.*;
 import lombok.*;

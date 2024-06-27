@@ -1,6 +1,6 @@
 package com.fultil.service.impl;
 
-import com.fultil.entity.Role;
+import com.fultil.model.Role;
 import com.fultil.enums.RoleType;
 import com.fultil.enums.permissions.AdminPermissions;
 import com.fultil.enums.permissions.UserPermissions;

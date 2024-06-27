@@ -11,18 +11,13 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class OrderLineItemsRequest {
-    private String id;
-
-    @NotBlank(message = "Sku code is required")
-    private String skuCode;
-
-    @NotNull(message = "Price is required")
-    @Positive(message = "Price must be greater than zero")
-    private BigDecimal price;
+public class OrderItemRequest {
+    @NotNull(message = "Product ID is required")
+    private Long productId;
 
     @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be greater than zero")
     private Integer quantity;
+
+    @NotNull(message = "Price is required")
+    private BigDecimal price;
 }

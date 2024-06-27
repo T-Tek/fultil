@@ -1,10 +1,8 @@
-package com.fultil.entity;
+package com.fultil.model;
 
-import com.fultil.enums.ProductCategory;
 import com.fultil.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,15 +29,15 @@ public class Product extends Auditable<String> {
     private String description;
 
     @ManyToOne
-    private User user;
+    @JoinColumn(name = "vendor_id", nullable = false)
+    private User vendor; // Vendor who owns the product
 
     private Integer quantity;
-//    private String image;
 
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    @OneToMany
+    @OneToMany(mappedBy = "product")
     private List<Review> reviews;
 
     public ProductStatus getProductStatus(){

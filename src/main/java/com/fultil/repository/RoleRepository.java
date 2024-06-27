@@ -1,6 +1,6 @@
 package com.fultil.repository;
 
-import com.fultil.entity.Role;
+import com.fultil.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

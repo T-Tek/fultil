@@ -1,7 +1,6 @@
 package com.fultil.payload.request;
 
-import com.fultil.entity.Product;
-import com.fultil.entity.User;
+import com.fultil.model.Product;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,5 +27,4 @@ public class ReviewRequest {
     private String message;
 
     private Product product;
-    private User user;
 }

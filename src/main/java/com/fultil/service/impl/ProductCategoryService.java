@@ -1,13 +1,11 @@
 package com.fultil.service.impl;
 
-import com.fultil.entity.ProductCategoryEntity;
+import com.fultil.model.ProductCategoryEntity;
 import com.fultil.enums.ProductCategory;
 import com.fultil.repository.ProductCategoryRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service

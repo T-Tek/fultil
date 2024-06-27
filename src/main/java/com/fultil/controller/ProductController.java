@@ -41,9 +41,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public Response getProductsByCreator(@RequestParam(required = false) String productName,
                                          @RequestParam int page,
-                                         @RequestParam int size,
-                                         Principal principal) {
-        PageResponse<List<ProductResponse>> products = productService.getProductsByCreator(productName, page, size, principal);
+                                         @RequestParam int size) {
+        PageResponse<List<ProductResponse>> products = productService.getProductsByCreator(productName, page, size);
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, products);
     }
     @GetMapping("/all/{category}")

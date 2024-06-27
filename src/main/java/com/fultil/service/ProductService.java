@@ -13,7 +13,7 @@ import java.util.List;
 public interface ProductService {
     ProductResponse createProduct(ProductRequest request);
     PageResponse<List<ProductResponse>> getProductsByCategory(String category, int page, int size);
-    PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal principal);
+    PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size);
     List<String> getAllProductCategories();
     PageResponse<List<ProductResponse>> getAllProducts(int page, int size);
     PageResponse<List<ProductResponse>> searchProductsByName(String name, int page, int size);

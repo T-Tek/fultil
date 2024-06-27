@@ -25,5 +25,5 @@ public class ProductResponse implements Serializable {
     private ProductStatus status;
     private String description;
     private String owner;
-    private List<ReviewResponse> reviewResponses;
+  //  private List<ReviewResponse> reviewResponses;
 }

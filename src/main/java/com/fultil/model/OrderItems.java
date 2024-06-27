@@ -1,9 +1,6 @@
-package com.fultil.entity;
+package com.fultil.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -14,11 +11,15 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderLineItems {
+public class OrderItems {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String skuCode;
     private BigDecimal price;
     private Integer quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product; // The product being ordered
 }

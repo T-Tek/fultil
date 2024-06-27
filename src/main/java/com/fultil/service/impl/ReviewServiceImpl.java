@@ -1,13 +1,14 @@
 package com.fultil.service.impl;
 
-import com.fultil.entity.Review;
-import com.fultil.entity.User;
+import com.fultil.model.Review;
+import com.fultil.model.User;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ReviewRequest;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ReviewResponse;
 import com.fultil.repository.ReviewRepository;
 import com.fultil.service.ReviewService;
+import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,13 +27,10 @@ import java.util.List;
 @Service
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository repository;
+
     @Override
     public void reviewProduct(ReviewRequest reviewRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResourceNotFoundException("User is not authenticated, can not review product");
-        }
-        User user = (User) authentication.getPrincipal();
+        User user = UserUtils.getAuthenticatedUser();
         Review newReview = Review.builder()
                 .title(reviewRequest.getTitle())
                 .message(reviewRequest.getMessage())
@@ -47,7 +45,7 @@ public class ReviewServiceImpl implements ReviewService {
     public PageResponse<List<ReviewResponse>> getAllReview(int rating, int page, int size) {
         log.info("Request to get product review/s");
 
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
         Page<Review> reviewPage = repository.findAllByRating(rating, pageable);
         if (reviewPage.isEmpty()){

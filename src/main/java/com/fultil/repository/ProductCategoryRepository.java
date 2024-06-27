@@ -1,7 +1,7 @@
 package com.fultil.repository;
 
 
-import com.fultil.entity.ProductCategoryEntity;
+import com.fultil.model.ProductCategoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.fultil.entity;
+package com.fultil.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fultil.enums.RoleType;

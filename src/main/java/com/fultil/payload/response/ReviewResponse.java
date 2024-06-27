@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ReviewResponse {
+    private ProductResponse productResponse;
     private String title;
     private Integer rating;
     private String message;

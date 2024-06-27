@@ -1,7 +1,7 @@
 package com.fultil.security;
 
-import com.fultil.entity.Role;
-import com.fultil.entity.User;
+import com.fultil.model.Role;
+import com.fultil.model.User;
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.exceptions.IncorrectPasswordException;
 import com.fultil.exceptions.ResourceNotFoundException;

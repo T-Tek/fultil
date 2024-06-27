@@ -1,6 +1,6 @@
 package com.fultil.service.impl;
 
-import com.fultil.entity.ProductCategoryEntity;
+import com.fultil.model.ProductCategoryEntity;
 import com.fultil.payload.response.ProductCategoryResponse;
 import com.fultil.repository.ProductCategoryRepository;
 import com.fultil.service.CategoryService;

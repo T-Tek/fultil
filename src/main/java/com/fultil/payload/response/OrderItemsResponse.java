@@ -6,15 +6,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderResponse {
-    private String orderNumber;
-    private String userName; // the name of the user who placed the order
-    private List<OrderItemsResponse> orderLineItemsResponses;
+public class OrderItemsResponse {
+    private String skuCode;
+    private BigDecimal price;
+    private Integer quantity;
+    private String vendorName;
 }

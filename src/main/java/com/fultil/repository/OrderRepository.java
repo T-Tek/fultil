@@ -1,7 +1,7 @@
 package com.fultil.repository;
 
-import com.fultil.entity.Order;
-import com.fultil.entity.User;
+import com.fultil.model.Order;
+import com.fultil.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

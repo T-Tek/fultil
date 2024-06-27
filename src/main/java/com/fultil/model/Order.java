@@ -1,11 +1,9 @@
-package com.fultil.entity;
+package com.fultil.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.util.List;
-
 
 @Getter
 @Setter
@@ -21,8 +19,9 @@ public class Order {
     private String orderNumber;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<OrderLineItems> orderLineItems;
-    @ManyToOne
-    private User user;
+    private List<OrderItems> orderLineItems;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user; // the person who placed the order
 }

@@ -1,9 +1,9 @@
 package com.fultil.service.impl;
 
-import com.fultil.entity.Product;
-import com.fultil.entity.ProductCategoryEntity;
-import com.fultil.entity.Review;
-import com.fultil.entity.User;
+import com.fultil.model.Product;
+import com.fultil.model.ProductCategoryEntity;
+import com.fultil.model.Review;
+import com.fultil.model.User;
 import com.fultil.enums.ProductCategory;
 import com.fultil.enums.ProductStatus;
 import com.fultil.exceptions.ResourceNotFoundException;
@@ -14,26 +14,20 @@ import com.fultil.payload.response.ReviewResponse;
 import com.fultil.repository.ProductCategoryRepository;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.ProductService;
-import com.fultil.service.ReviewService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,16 +36,11 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
-    private final ReviewService reviewService;
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResourceNotFoundException("User is not authenticated, can not create product");
-        }
-        User user = (User) authentication.getPrincipal();
-        log.info("Received request to create product with name: {} by: {}",request.getName(), authentication.getName());
+        User user = UserUtils.getAuthenticatedUser();
+        log.info("Received request to create product with name: {} by: {}",request.getName(), user.getName());
 
         String categoryName = request.getCategory();
 
@@ -67,7 +56,7 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(request.getQuantity())
                 .skuCode(UserUtils.generateSku(request.getName()))
                 .status(ProductStatus.valueOf("IN_STOCK"))
-                .user(user)
+                .vendor(user)
                 .build();
         Product savedProduct = saveProduct(newProduct);
         log.info("Product with name '{}' is saved ", request.getName());
@@ -101,20 +90,19 @@ public class ProductServiceImpl implements ProductService {
 
   //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
     @Override
-    public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size, Principal creator) {
-        Authentication authentication = (UsernamePasswordAuthenticationToken) creator;
-        User currentUser = (User) authentication.getPrincipal();
-        String userEmail = currentUser.getEmail();
+    public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size) {
+        User user = UserUtils.getAuthenticatedUser();
+        String userEmail = user.getEmail();
 
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Product> productPage = null;
         if (Objects.isNull(name)){
             log.info("Request received to get products with page {}, and size {}. Requested by user with email '{}'.", page, size, userEmail);
-            productPage = productRepository.findAllByCreatedBy(currentUser.getEmail(), pageable);
+            productPage = productRepository.findAllByCreatedBy(userEmail, pageable);
         }else {
             log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
-            productPage = productRepository.findProductByCreator(name, currentUser.getEmail(), pageable);
+            productPage = productRepository.findProductByCreator(name, userEmail, pageable);
         }
         if (productPage.isEmpty()){
             log.warn("No products found.");
@@ -202,14 +190,9 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long id, ProductRequest productRequest) {
         log.info("Request to update Product with id: {} ", id);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            log.error("User is not authenticated, cannot update product with id: {}", id);
-            throw new ResourceNotFoundException("User is not authenticated, cannot update product");
-        }
+        User user = UserUtils.getAuthenticatedUser();
 
-        User user = (User) authentication.getPrincipal();
-        log.info("Received request to update product with name: {} by: {}", productRequest.getName(), authentication.getName());
+        log.info("Received request to update product with name: {} by: {}", productRequest.getName(), user.getName());
 
         String categoryName = productRequest.getCategory();
         ProductCategoryEntity category = productCategoryRepository.findByName(categoryName)
@@ -229,7 +212,7 @@ public class ProductServiceImpl implements ProductService {
         product.setQuantity(productRequest.getQuantity());
         product.setCategory(category);
         product.setDescription(productRequest.getDescription());
-        product.setUser(user);
+        product.setVendor(user);
 
         Product savedProduct = saveProduct(product);
         log.info("Product with id '{}' is updated and saved", id);
@@ -246,8 +229,8 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(product.getQuantity())
                 .status(product.getProductStatus())
                 .description(product.getDescription())
-                .owner(product.getUser().getFirstName())
-                .reviewResponses(mapToReviewResponseList(product.getReviews()))
+                .owner(product.getVendor().getFirstName())
+            //    .reviewResponses(mapToReviewResponseList(product.getReviews()))
                 .build();
     }
     private List<ReviewResponse> mapToReviewResponseList(List<Review> reviews){

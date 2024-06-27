@@ -1,7 +1,5 @@
 package com.fultil.payload.request;
 
-import com.fultil.entity.User;
-import com.fultil.enums.ProductCategory;
 import lombok.*;
 
 import java.math.BigDecimal;

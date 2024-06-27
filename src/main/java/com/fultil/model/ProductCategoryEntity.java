@@ -1,8 +1,7 @@
-package com.fultil.entity;
+package com.fultil.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.redis.core.RedisHash;
 
 import java.util.List;
 

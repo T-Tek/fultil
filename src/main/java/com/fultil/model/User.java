@@ -1,4 +1,4 @@
-package com.fultil.entity;
+package com.fultil.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +39,7 @@ public class User implements UserDetails, Principal {
     private boolean accountLocked;
     private boolean enabled;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
     private List<Product> products;
 
     @JsonProperty("roles")
@@ -57,6 +57,7 @@ public class User implements UserDetails, Principal {
 
     @CreatedDate
     private LocalDate createdDate;
+
     @UpdateTimestamp
     private LocalDate updateDate;
 

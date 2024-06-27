@@ -1,12 +1,11 @@
 package com.fultil.service.impl;
 
 import com.fultil.email.EmailService;
-import com.fultil.entity.Role;
-import com.fultil.entity.AccountActivationToken;
-import com.fultil.entity.User;
+import com.fultil.model.Role;
+import com.fultil.model.AccountActivationToken;
+import com.fultil.model.User;
 import com.fultil.enums.EmailTemplateName;
 import com.fultil.enums.ResponseCodeAndMessage;
-import com.fultil.enums.RoleType;
 import com.fultil.exceptions.DuplicateException;
 import com.fultil.exceptions.IncorrectPasswordException;
 import com.fultil.exceptions.ResourceNotFoundException;
@@ -141,11 +140,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void changePassword(ChangePasswordRequest request) {
         log.info("Request to change password..........");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            throw new ResourceNotFoundException("User is not authenticated");
-        }
-        User user = (User) authentication.getPrincipal();
+        User user = UserUtils.getAuthenticatedUser();
 
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
             throw new IncorrectPasswordException(ResponseCodeAndMessage.BAD_REQUEST,
