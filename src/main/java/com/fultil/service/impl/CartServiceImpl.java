@@ -1,21 +1,18 @@
 package com.fultil.service.impl;
 
-import com.fultil.model.Cart;
-import com.fultil.model.CartItems;
-import com.fultil.model.Product;
-import com.fultil.model.User;
+import com.fultil.model.*;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.CartItemsRequest;
 import com.fultil.payload.response.CartItemResponse;
 import com.fultil.payload.response.CartResponse;
+import com.fultil.payload.response.InventoryResponse;
 import com.fultil.repository.CartRepository;
 import com.fultil.repository.ProductRepository;
 import com.fultil.service.CartService;
+import com.fultil.service.InventoryService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,15 +26,21 @@ public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
 
     @Override
     public CartResponse addToCart(CartItemsRequest cartItemRequest) {
-        log.info("Request to add product to cart");
+        log.info("Request to add product to cart with payload {}:", cartItemRequest);
         User user = UserUtils.getAuthenticatedUser();
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
 
         Product product = productRepository.findById(cartItemRequest.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        InventoryResponse inventoryResponse = inventoryService.checkStock(product.getId(), cartItemRequest.getQuantity());
+        if (!inventoryResponse.isInStock()) {
+            throw new ResourceNotFoundException("Insufficient stock for product: ".concat(product.getName()));
+        }
 
         CartItems cartItem = new CartItems();
         cartItem.setProduct(product);
@@ -80,13 +83,12 @@ public class CartServiceImpl implements CartService {
         return totalPrice;
     }
 
-
     private CartResponse mapToCartResponse(Cart cart) {
-      List<CartItemResponse> cartItemResponses = new ArrayList<>();
-      for (CartItems cartItems : cart.getCartItems()){
-          cartItemResponses.add(mapToCartItemResponse(cartItems));
-      }
-      return new CartResponse(cartItemResponses);
+        List<CartItemResponse> cartItemResponses = new ArrayList<>();
+        for (CartItems cartItems : cart.getCartItems()){
+            cartItemResponses.add(mapToCartItemResponse(cartItems));
+        }
+        return new CartResponse(cartItemResponses);
     }
 
     private CartItemResponse mapToCartItemResponse(CartItems cartItems){

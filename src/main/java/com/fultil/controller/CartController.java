@@ -32,7 +32,7 @@ public class CartController {
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, cartResponse);
     }
 
-    @GetMapping("/get/totalPrice")
+    @GetMapping("/get-totalPrice")
     @ResponseStatus(HttpStatus.OK)
     public Response getTotalPrice(){
         BigDecimal totalPrice = cartService.getTotalPriceOfCartItemsByCurrentUser();

@@ -9,6 +9,7 @@ import com.fultil.payload.response.Response;
 import com.fultil.service.AuthenticationService;
 import com.fultil.utils.UserUtils;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,10 +30,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public Response login(@RequestBody @Valid LoginRequest loginRequest){
+    @ResponseStatus(HttpStatus.OK)
+    public Response login(@RequestBody @Valid LoginRequest loginRequest, HttpServletRequest request){
         AuthenticationResponse data = authenticationService.login(loginRequest);
-        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data);
+        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data, request.getRequestURI());
     }
     @GetMapping("/activate-account")
     @ResponseStatus(HttpStatus.OK)

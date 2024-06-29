@@ -2,7 +2,9 @@ package com.fultil.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,6 +19,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String orderNumber;
+    @CreationTimestamp
+    private LocalDateTime createdDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItems> orderLineItems;

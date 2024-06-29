@@ -1,5 +1,6 @@
 package com.fultil.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.model.User;
@@ -8,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.UUID;
 
@@ -58,15 +60,35 @@ public class UserUtils {
      * @param data                   The data to include in the response.
      * @return The constructed response object.
      */
-    public static Response generateResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data) {
+    public static Response generateResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data, String path) {
         Response response = Response.builder()
-                .responseCode(responseCodeAndMessage.code)
-                .message(responseCodeAndMessage.message)
+                .statusCode(responseCodeAndMessage.status.value())
+                .status(responseCodeAndMessage.status)
+                .timestamp(LocalDateTime.now())
+                .path(path)
                 .data(data)
                 .build();
-        log.info("Generated response: Response Code --> {}, Message --> {}, Data --> {}", response.getResponseCode(), response.getMessage(), response.getData());
+
+        log.info("Generated response: Response Code --> {}, Status --> {}, Path --> {}, Data --> {}",
+                response.getStatusCode(), response.getStatus(),
+                response.getPath(), convertObjectToJson(response.getData()));
         return response;
     }
+
+    public static Response generateResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data) {
+        return generateResponse(responseCodeAndMessage, data, null);
+    }
+
+    private static String convertObjectToJson(Object data) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(data);
+        } catch (Exception e) {
+            log.error("Error converting object to JSON", e);
+            return data.toString();
+        }
+    }
+
     public static User getAuthenticatedUser() {
         log.info("Checking if user is authenticated");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

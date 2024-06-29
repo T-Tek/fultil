@@ -40,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse createProduct(ProductRequest request) {
         User user = UserUtils.getAuthenticatedUser();
-        log.info("Received request to create product with name: {} by: {}",request.getName(), user.getName());
+        log.info("Received request to create product with name: {} by: {}", request.getName(), user.getName());
 
         String categoryName = request.getCategory();
 
@@ -64,9 +64,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
- //   @Cacheable(value = "items", key = "#category + '-' + #page + '-' + #size")
+    //   @Cacheable(value = "items", key = "#category + '-' + #page + '-' + #size")
     @Override
-    public  PageResponse<List<ProductResponse>> getProductsByCategory(String category, int page, int size) {
+    public PageResponse<List<ProductResponse>> getProductsByCategory(String category, int page, int size) {
         List<ProductResponse> responses = new ArrayList<>();
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage = productRepository.findAllByCategory(category, pageable);
@@ -88,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
-  //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
+    //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size) {
         User user = UserUtils.getAuthenticatedUser();
@@ -97,14 +97,14 @@ public class ProductServiceImpl implements ProductService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Product> productPage = null;
-        if (Objects.isNull(name)){
+        if (Objects.isNull(name)) {
             log.info("Request received to get products with page {}, and size {}. Requested by user with email '{}'.", page, size, userEmail);
             productPage = productRepository.findAllByCreatedBy(userEmail, pageable);
-        }else {
+        } else {
             log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
             productPage = productRepository.findProductByCreator(name, userEmail, pageable);
         }
-        if (productPage.isEmpty()){
+        if (productPage.isEmpty()) {
             log.warn("No products found.");
             throw new ResourceNotFoundException("No record found");
         }
@@ -115,18 +115,18 @@ public class ProductServiceImpl implements ProductService {
         }
         PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
 
-            pageResponse.setTotalElements(productPage.getNumberOfElements());
-            pageResponse.setTotalPages(productPage.getTotalPages());
-            pageResponse.setHasNext(productPage.hasNext());
-            pageResponse.setContents(products);
+        pageResponse.setTotalElements(productPage.getNumberOfElements());
+        pageResponse.setTotalPages(productPage.getTotalPages());
+        pageResponse.setHasNext(productPage.hasNext());
+        pageResponse.setContents(products);
 
-            log.info("Retrieved {} products for name '{}' (Page {}/{}).", products.size(), name, productPage.getNumber(), productPage.getTotalPages());
+        log.info("Retrieved {} products for name '{}' (Page {}/{}).", products.size(), name, productPage.getNumber(), productPage.getTotalPages());
 
-            return pageResponse;
+        return pageResponse;
     }
 
 
-//    @Cacheable(value = "items")
+    //    @Cacheable(value = "items")
     @Override
     public List<String> getAllProductCategories() {
         log.info("Getting list of product categories........");
@@ -159,7 +159,7 @@ public class ProductServiceImpl implements ProductService {
         return pageResponse;
     }
 
- //   @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
+    //   @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> searchProductsByName(String name, int page, int size) {
         log.info("Request received to get products with name {} page {}, and size {}.", name, page, size);
@@ -185,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
         return pageResponse;
     }
 
- //   @CachePut(value = "items", key = "#id + '-' + #productRequest")
+    //   @CachePut(value = "items", key = "#id + '-' + #productRequest")
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest productRequest) {
         log.info("Request to update Product with id: {} ", id);
@@ -229,11 +229,12 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(product.getQuantity())
                 .status(product.getProductStatus())
                 .description(product.getDescription())
-                .owner(product.getVendor().getFirstName())
-            //    .reviewResponses(mapToReviewResponseList(product.getReviews()))
+                .vendor(product.getVendor().getFirstName())
+                //    .reviewResponses(mapToReviewResponseList(product.getReviews()))
                 .build();
     }
-    private List<ReviewResponse> mapToReviewResponseList(List<Review> reviews){
+
+    private List<ReviewResponse> mapToReviewResponseList(List<Review> reviews) {
         return reviews.stream()
                 .map(ReviewServiceImpl::mapToReviewResponse)
                 .toList();
@@ -243,8 +244,9 @@ public class ProductServiceImpl implements ProductService {
         log.info("Saving product with name: {}, price: {}, and category: {}", product.getName(), product.getPrice(), product.getCategory());
         return productRepository.save(product);
     }
-    private void checkIfProductPageIsNotEmpty(Page<Product> productPage){
-        if (productPage.isEmpty()){
+
+    private void checkIfProductPageIsNotEmpty(Page<Product> productPage) {
+        if (productPage.isEmpty()) {
             throw new ResourceNotFoundException("No products found");
         }
     }
@@ -254,9 +256,9 @@ public class ProductServiceImpl implements ProductService {
         return ProductCategory.valueOf(categoryName);
     }
 
-    private List<String> getListOfCategoryFromEnum(){
+    private List<String> getListOfCategoryFromEnum() {
         List<String> categoryList = new ArrayList<>();
-        for (ProductCategory category : ProductCategory.values()){
+        for (ProductCategory category : ProductCategory.values()) {
             categoryList.add(category.getDescription());
         }
         return categoryList;

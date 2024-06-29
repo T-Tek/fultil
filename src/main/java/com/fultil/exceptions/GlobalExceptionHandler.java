@@ -1,3 +1,4 @@
+
 package com.fultil.exceptions;
 
 
@@ -35,11 +36,11 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(DuplicateException.class)
+    @ExceptionHandler(BadRequestException.class)
     @ResponseBody
-    public Response handleDuplicateEmailException(DuplicateException exception){
-        log.error("DuplicateUserException occurred: {}", exception.getMessage());
-        return UserUtils.generateResponse(ResponseCodeAndMessage.ALREADY_EXISTS, exception.getMessage());
+    public Response handleBadRequestException(BadRequestException exception){
+        log.error("BadRequestException occurred: {}", exception.getMessage());
+        return UserUtils.generateResponse(ResponseCodeAndMessage.BAD_REQUEST, exception.getMessage());
     }
 
 
@@ -48,15 +49,7 @@ public class GlobalExceptionHandler {
     @ResponseBody
     public Response handleResourceNotFoundException(ResourceNotFoundException exception){
         log.error("ResourceNotFoundException occurred: {}", exception.getMessage());
-        return UserUtils.generateResponse(ResponseCodeAndMessage.RESOURCE_NOT_FOUND, exception.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IncorrectPasswordException.class)
-    @ResponseBody
-    public Response handleIncorrectPasswordException(IncorrectPasswordException exception){
-        log.error("ResourceNotFoundException occurred: {}", exception.getMessage());
-        return UserUtils.generateResponse(ResponseCodeAndMessage.INVALID_AUTHENTICATION, exception.getMessage());
+        return UserUtils.generateResponse(ResponseCodeAndMessage.NOT_FOUND, exception.getMessage());
     }
 }
 

@@ -1,7 +1,9 @@
 package com.fultil.payload.response;
 
-
 import lombok.*;
+import org.springframework.http.HttpStatus;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -9,7 +11,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class Response {
-    private String responseCode;
-    private String message;
+    private int statusCode;
+    private HttpStatus status;
+    private LocalDateTime timestamp;
+    private String path;
     private Object data;
 }

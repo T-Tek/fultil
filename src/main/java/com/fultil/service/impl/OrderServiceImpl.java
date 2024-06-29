@@ -1,17 +1,16 @@
 package com.fultil.service.impl;
 
-import com.fultil.model.Order;
-import com.fultil.model.OrderItems;
-import com.fultil.model.Product;
-import com.fultil.model.User;
+import com.fultil.model.*;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.OrderItemRequest;
 import com.fultil.payload.request.OrderRequest;
+import com.fultil.payload.response.InventoryResponse;
 import com.fultil.payload.response.OrderItemsResponse;
 import com.fultil.payload.response.OrderResponse;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.repository.OrderRepository;
 import com.fultil.repository.ProductRepository;
+import com.fultil.service.InventoryService;
 import com.fultil.service.OrderService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
 
     @Override
     public void placeOrder(OrderRequest orderRequest) {
@@ -57,9 +55,9 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Order placed successfully with order number: {}", newOrder.getOrderNumber());
 
-
         orderRepository.save(newOrder);
     }
+
     @Override
     public PageResponse<List<OrderResponse>> getAllOrdersByCurrentUser(int page, int size) {
         User user = UserUtils.getAuthenticatedUser();
@@ -83,22 +81,21 @@ public class OrderServiceImpl implements OrderService {
                 orderResponses
         );
     }
+
     private OrderItems mapToOrderLineItem(OrderItemRequest orderItemRequest) {
         Product product = productRepository.findById(orderItemRequest.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        Integer availableQuantity = product.getQuantity();
-        Integer requestedQuantity = orderItemRequest.getQuantity();
-        if (requestedQuantity > availableQuantity) {
-            throw new ResourceNotFoundException("Only " + availableQuantity + " " + product.getName() + "(s) in stock.");
+
+        InventoryResponse inventoryResponse = inventoryService.checkStock(product.getId(), orderItemRequest.getQuantity());
+        if (!inventoryResponse.isInStock()) {
+            throw new ResourceNotFoundException("Insufficient stock for product: " + product.getName());
         }
 
-        // updating the product's stock here
-        product.setQuantity(availableQuantity - requestedQuantity);
-        productRepository.save(product);
+        inventoryService.updateStock(product.getId(), orderItemRequest.getQuantity());
 
         return OrderItems.builder()
                 .product(product)
-                .quantity(requestedQuantity)
+                .quantity(orderItemRequest.getQuantity())
                 .price(product.getPrice())
                 .skuCode(product.getSkuCode())
                 .build();
@@ -107,30 +104,27 @@ public class OrderServiceImpl implements OrderService {
     private OrderResponse mapToOrderResponse(Order order) {
         return OrderResponse.builder()
                 .orderNumber(order.getOrderNumber())
-                .userName(order.getUser().getFirstName() + " " + order.getUser().getLastName())
-                .orderLineItemsResponses(mapToOrderLineItemsResponse(order.getOrderLineItems()))
+                .orderDate(order.getCreatedDate())
+                .orderItems(mapToOrderItemsResponse(order.getOrderLineItems()))
                 .build();
     }
 
-    private List<OrderItemsResponse> mapToOrderLineItemsResponse(List<OrderItems> orderLineItemsList) {
-        List<OrderItemsResponse> responses = new ArrayList<>();
-        for (OrderItems item : orderLineItemsList) {
-            responses.add(mapToOrderLineItems(item));
+    private List<OrderItemsResponse> mapToOrderItemsResponse(List<OrderItems> orderLineItems) {
+        List<OrderItemsResponse> orderItemsResponses = new ArrayList<>();
+        for (OrderItems item : orderLineItems) {
+            orderItemsResponses.add(
+                    OrderItemsResponse.builder()
+                            .name(item.getProduct().getName())
+                            .price(item.getPrice())
+                            .quantity(item.getQuantity())
+                            .vendorName(item.getProduct().getVendor().getName())
+                            .build()
+            );
         }
-        return responses;
-    }
-
-    private OrderItemsResponse mapToOrderLineItems(OrderItems orderLineItems) {
-        return OrderItemsResponse.builder()
-                .price(orderLineItems.getPrice())
-                .skuCode(orderLineItems.getSkuCode())
-                .quantity(orderLineItems.getQuantity())
-                .vendorName(orderLineItems.getProduct().getVendor().getFirstName() + " " + orderLineItems.getProduct().getVendor().getLastName())
-                .build();
+        return orderItemsResponses;
     }
 
     private String generateOrderNumber() {
-        String orderNumber = UUID.randomUUID().toString().toUpperCase().replace("-", "").substring(0, 4);
-        return "ORD-".concat(orderNumber);
+        return UUID.randomUUID().toString();
     }
 }

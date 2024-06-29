@@ -6,6 +6,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class CartItemsRequest {
     private Long productId;
     private Integer quantity;

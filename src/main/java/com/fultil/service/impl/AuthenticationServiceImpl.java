@@ -1,20 +1,18 @@
 package com.fultil.service.impl;
 
 import com.fultil.email.EmailService;
+import com.fultil.exceptions.BadRequestException;
 import com.fultil.model.Role;
 import com.fultil.model.AccountActivationToken;
 import com.fultil.model.User;
 import com.fultil.enums.EmailTemplateName;
-import com.fultil.enums.ResponseCodeAndMessage;
-import com.fultil.exceptions.DuplicateException;
-import com.fultil.exceptions.IncorrectPasswordException;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.ChangePasswordRequest;
 import com.fultil.payload.request.LoginRequest;
 import com.fultil.payload.request.UserRequest;
 import com.fultil.payload.response.AuthenticationResponse;
 import com.fultil.repository.RoleRepository;
-import com.fultil.repository.TokenRepository;
+import com.fultil.repository.AccountActivationTokenRepository;
 import com.fultil.repository.UserRepository;
 import com.fultil.security.JwtService;
 import com.fultil.service.AuthenticationService;
@@ -41,7 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final TokenRepository tokenRepository;
+    private final AccountActivationTokenRepository accountActivationTokenRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailService emailService;
@@ -73,7 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRepository.save(user);
             sendValidationEmail(user);
             log.info("Account created with email: {}", userRequest.getEmail());
-            return "Account created, activation email has been sent to " + userRequest.getEmail();
+            return "Account created, activation email has been sent to ".concat(userRequest.getEmail());
         } catch (Exception ex) {
             log.error("Error occurred while registering user: {}", ex.getMessage());
             throw ex;
@@ -83,47 +81,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse login(LoginRequest loginRequest) {
         log.info("Request to login with email: {} ", loginRequest.getEmail());
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(), loginRequest.getPassword()
+                )
+        );
 
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginRequest.getEmail(), loginRequest.getPassword()));
         Map<String, Object> claims = new HashMap<>();
         User user = (User) auth.getPrincipal();
         claims.put("fullName", user.getFirstName());
         String jwtToken = jwtService.generateToken(claims, user);
-         SecurityContextHolder.getContext().setAuthentication(
-         new UsernamePasswordAuthenticationToken(user, null,
-         user.getAuthorities()));
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
+        );
         log.info("JWT token generated for user '{}':", user.getFirstName());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
-        // String email = loginRequest.getEmail();
-        // String password = loginRequest.getPassword();
-        // log.info("Login request with email: '{}' received ", email);
-        // if (Objects.isNull(email) || Objects.isNull(password)) {
-        // throw new IllegalArgumentException("Email or password cannot be null");
-        // }
 
-        // UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        // if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-        // log.warn("Incorrect password for user: {}", email);
-        // throw new IncorrectPasswordException(ResponseCodeAndMessage.BAD_REQUEST,
-        // "Incorrect password, try again");
-        // }
-        // String token = jwtService.generateToken(userDetails);
-        // log.info("User logged in successfully: {}", email);
-        // SecurityContextHolder.getContext().setAuthentication(
-        // new UsernamePasswordAuthenticationToken(userDetails, null,
-        // userDetails.getAuthorities()));
-        // return AuthenticationResponse.builder()
-        // .token(token)
-        // .build();
     }
 
     @Override
     public void activateAccount(String token) throws MessagingException {
         log.info("Activating account........");
-        AccountActivationToken savedToken = tokenRepository.findByToken(token)
+        AccountActivationToken savedToken = accountActivationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid token"));
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             sendValidationEmail(savedToken.getUser());
@@ -134,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setEnabled(true);
         userRepository.save(user);
         savedToken.setValidatedAt(LocalDateTime.now());
-        tokenRepository.save(savedToken);
+        accountActivationTokenRepository.save(savedToken);
     }
 
     @Override
@@ -143,12 +125,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = UserUtils.getAuthenticatedUser();
 
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
-            throw new IncorrectPasswordException(ResponseCodeAndMessage.BAD_REQUEST,
-                    "New password and confirm password do not match");
+            throw new BadRequestException("New password and confirm password do not match");
         }
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new IncorrectPasswordException(ResponseCodeAndMessage.BAD_REQUEST,
-                    "Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
         }
 
         String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
@@ -173,7 +153,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .user(user)
                 .build();
 
-        tokenRepository.save(token);
+        accountActivationTokenRepository.save(token);
         log.info("Activation token generated and saved for user {}", user.getId());
         return generatedToken;
     }
@@ -198,7 +178,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String email = userRequest.getEmail();
         if (isUserExists(email)) {
             log.info("Duplicate user detected with email: {}", email);
-            throw new DuplicateException("User with email " + email + " already exists.");
+            throw new BadRequestException("User with email ".concat(email) + " already exists.");
         }
     }
 

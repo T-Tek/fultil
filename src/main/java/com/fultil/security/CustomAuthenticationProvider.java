@@ -1,9 +1,8 @@
 package com.fultil.security;
 
+import com.fultil.exceptions.BadRequestException;
 import com.fultil.model.Role;
 import com.fultil.model.User;
-import com.fultil.enums.ResponseCodeAndMessage;
-import com.fultil.exceptions.IncorrectPasswordException;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +16,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
-
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,30 +31,36 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
-        Optional<User> userOptional = userRepository.findByEmail(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (passwordEncoder.matches(password, user.getPassword())) {
-                log.info("User '{}' authenticated successfully", username);
-                return new UsernamePasswordAuthenticationToken(user, password, getGrantedAuthorities(user.getRoles()));
-            } else {
-                throw new IncorrectPasswordException(ResponseCodeAndMessage.BAD_REQUEST, "Incorrect password, please try again");
-            }
+
+        log.info("Authenticating user with email: {}", username);
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> {
+                    log.warn("User with email '{}' not found", username);
+                    return new ResourceNotFoundException("User not found");
+                });
+
+        if (!user.isEnabled()) {
+            log.warn("User '{}' is disabled", username);
+            throw new BadRequestException("User account is disabled");
+        }
+
+        if (passwordEncoder.matches(password, user.getPassword())) {
+            log.info("User '{}' authenticated successfully", username);
+            return new UsernamePasswordAuthenticationToken(user, password, getGrantedAuthorities(user.getRoles()));
         } else {
-            log.info("User not found");
-            throw new ResourceNotFoundException("User not found");
+            log.warn("Incorrect password for user '{}'", username);
+            throw new BadRequestException("Incorrect password");
         }
     }
+
     private List<GrantedAuthority> getGrantedAuthorities(List<Role> roles) {
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        for (Role authority : roles) {
-            grantedAuthorities.add(new SimpleGrantedAuthority(authority.getName()));
-        }
-        return grantedAuthorities;
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
