@@ -15,12 +15,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,15 +50,15 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewPage.isEmpty()){
             throw new ResourceNotFoundException("No review found");
         }
-        List<ReviewResponse> reviewResponses = new ArrayList<>();
+        List<ReviewResponse> reviews = new ArrayList<>();
         for (Review review : reviewPage){
-            reviewResponses.add(mapToReviewResponse(review));
+            reviews.add(mapToReviewResponse(review));
         }
         return new PageResponse<>(
                 reviewPage.getNumberOfElements(),
                 reviewPage.getTotalPages(),
                 reviewPage.hasNext(),
-                reviewResponses
+                Map.of("reviews", reviews)
         );
     }
 

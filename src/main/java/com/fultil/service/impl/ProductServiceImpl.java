@@ -25,9 +25,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     //   @Cacheable(value = "items", key = "#category + '-' + #page + '-' + #size")
     @Override
     public PageResponse<List<ProductResponse>> getProductsByCategory(String category, int page, int size) {
-        List<ProductResponse> responses = new ArrayList<>();
+        List<ProductResponse> productResponseList = new ArrayList<>();
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage = productRepository.findAllByCategory(category, pageable);
 
@@ -77,14 +77,14 @@ public class ProductServiceImpl implements ProductService {
         }
 
         for (Product product : productPage) {
-            responses.add(convertToResponseDto(product));
+            productResponseList.add(convertToResponseDto(product));
         }
 
         return new PageResponse<>(
                 productPage.getNumberOfElements(),
                 productPage.getTotalPages(),
                 productPage.hasNext(),
-                responses
+                Map.of("products", productResponseList)
         );
     }
 
@@ -118,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
         pageResponse.setTotalElements(productPage.getNumberOfElements());
         pageResponse.setTotalPages(productPage.getTotalPages());
         pageResponse.setHasNext(productPage.hasNext());
-        pageResponse.setContents(products);
+        pageResponse.setContent(Map.of("products", products));
 
         log.info("Retrieved {} products for name '{}' (Page {}/{}).", products.size(), name, productPage.getNumber(), productPage.getTotalPages());
 
@@ -148,11 +148,12 @@ public class ProductServiceImpl implements ProductService {
             productResponseList.add(convertToResponseDto(product));
         }
         PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
+ //       Map<String, List<ProductResponse>> products = Collections.singletonMap("products", productResponseList);
 
         pageResponse.setTotalElements(productPage.getNumberOfElements());
         pageResponse.setTotalPages(productPage.getTotalPages());
         pageResponse.setHasNext(productPage.hasNext());
-        pageResponse.setContents(productResponseList);
+        pageResponse.setContent(Map.of("products", productResponseList));
 
         log.info("Retrieved {} products for (Page {}/{}).", productResponseList.size(), productPage.getNumber(), productPage.getTotalPages());
 
@@ -178,7 +179,7 @@ public class ProductServiceImpl implements ProductService {
         pageResponse.setTotalElements(productPage.getNumberOfElements());
         pageResponse.setTotalPages(productPage.getTotalPages());
         pageResponse.setHasNext(productPage.hasNext());
-        pageResponse.setContents(productResponseList);
+        pageResponse.setContent(Map.of("products", productResponseList));
 
         log.info("Retrieved {} products for (Page {}/{}).", productResponseList.size(), productPage.getNumber(), productPage.getTotalPages());
 
@@ -223,6 +224,7 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductResponse convertToResponseDto(Product product) {
         return ProductResponse.builder()
+                .id(product.getId())
                 .name(product.getName())
                 .price(product.getPrice())
                 .category(convertCategoryEntityToEnum(product.getCategory()))
@@ -230,15 +232,18 @@ public class ProductServiceImpl implements ProductService {
                 .status(product.getProductStatus())
                 .description(product.getDescription())
                 .vendor(product.getVendor().getFirstName())
-                //    .reviewResponses(mapToReviewResponseList(product.getReviews()))
+                .reviews(mapToReviewResponseList(product.getReviews()))
                 .build();
     }
 
+
     private List<ReviewResponse> mapToReviewResponseList(List<Review> reviews) {
+        //   boolean hasOrderedProduct = review.getUser().getId().equals() && review.getOrder() != null;
         return reviews.stream()
                 .map(ReviewServiceImpl::mapToReviewResponse)
-                .toList();
+                .collect(Collectors.toList());
     }
+
 
     private Product saveProduct(Product product) {
         log.info("Saving product with name: {}, price: {}, and category: {}", product.getName(), product.getPrice(), product.getCategory());

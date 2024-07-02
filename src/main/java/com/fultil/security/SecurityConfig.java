@@ -31,17 +31,19 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             CorsConfiguration corsConfig = new CorsConfiguration();
-                           // corsConfig.setAllowedOrigins(List.of("http://yourfrontend.com"));
+                            // corsConfig.setAllowedOrigins(List.of("http://yourfrontend.com"));
                             corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
                             corsConfig.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
                             return corsConfig;
                         }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/auth/change-password").authenticated()
+                        .requestMatchers("/api/v1/auth/change-password").authenticated()
                         .requestMatchers("/api/v1/user/**").authenticated()
                         .requestMatchers("/api/v1/product/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/cart/**").permitAll()
+                        .requestMatchers("/api/v1/order/**").authenticated()
                         .anyRequest()
                         .authenticated()
                 )

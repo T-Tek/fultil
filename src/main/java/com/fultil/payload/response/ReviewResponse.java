@@ -13,4 +13,5 @@ public class ReviewResponse {
     private String title;
     private Integer rating;
     private String message;
+    private boolean hasOrderedProduct;
 }

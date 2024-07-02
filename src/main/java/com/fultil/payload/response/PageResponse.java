@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Map;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,5 +20,5 @@ public class PageResponse<T> implements Serializable {
     private int totalElements;
     private int totalPages;
     private boolean hasNext;
-    private T contents;
+    private Map<?, ?> content;
 }

@@ -64,7 +64,6 @@ public class UserUtils {
         Response response = Response.builder()
                 .statusCode(responseCodeAndMessage.status.value())
                 .status(responseCodeAndMessage.status)
-                .timestamp(LocalDateTime.now())
                 .path(path)
                 .data(data)
                 .build();

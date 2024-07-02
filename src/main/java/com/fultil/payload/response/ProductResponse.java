@@ -7,6 +7,7 @@ import lombok.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Setter
 @Getter
@@ -17,6 +18,7 @@ public class ProductResponse implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private Long id;
     private String name;
     private BigDecimal price;
     private ProductCategory category;
@@ -24,5 +26,5 @@ public class ProductResponse implements Serializable {
     private ProductStatus status;
     private String description;
     private String vendor;
-  //  private List<ReviewResponse> reviewResponses;
+    private List<ReviewResponse> reviews;
 }

@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ROLE_USER')")
 @RequestMapping("/api/v1/cart")
 public class CartController {
 

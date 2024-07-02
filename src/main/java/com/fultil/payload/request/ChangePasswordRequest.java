@@ -20,7 +20,4 @@ public class ChangePasswordRequest {
 
     @NotBlank(message = "Confirm new password cannot be blank")
     private String confirmNewPassword;
-
-//    @NotBlank(message = "email cannot be blank")
-//    private String email;
 }
