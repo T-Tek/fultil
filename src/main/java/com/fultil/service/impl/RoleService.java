@@ -26,21 +26,20 @@ public class RoleService {
                 .roleType(RoleType.ROLE_USER)
                 .userPermissions(new ArrayList<>(EnumSet.allOf(UserPermissions.class)))
                 .build();
+        createRole(userRole);
 
         Role vendorRole = Role.builder()
                 .name("ROLE_VENDOR")
                 .roleType(RoleType.ROLE_VENDOR)
                 .vendorRolePermissions(new ArrayList<>(EnumSet.allOf(VendorPermissions.class)))
                 .build();
+        createRole(vendorRole);
 
         Role adminRole = Role.builder()
                 .name("ROLE_ADMIN")
                 .roleType(RoleType.ROLE_ADMIN)
                 .adminPermissions(new ArrayList<>(EnumSet.allOf(AdminPermissions.class)))
                 .build();
-
-        createRole(userRole);
-        createRole(vendorRole);
         createRole(adminRole);
     }
 

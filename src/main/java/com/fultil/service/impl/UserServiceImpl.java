@@ -24,31 +24,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String becomeVendor() {
-        User user = UserUtils.getAuthenticatedUser();
-        log.info("Request to become a Vendor by {}", user.getEmail());
+        User currentUser = UserUtils.getAuthenticatedUser();
+        log.info("Request to become a Vendor by {}", currentUser.getEmail());
 
-        String roleName = RoleType.ROLE_VENDOR.name();
-        String defaultRole = RoleType.ROLE_USER.name();
-        Role vendorRole = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new ResourceNotFoundException("Vendor Role not found"));
+        String ROLE_VENDOR = RoleType.ROLE_VENDOR.name();
+        String ROLE_USER = RoleType.ROLE_USER.name();
 
-        Role userRole = roleRepository.findByName(defaultRole)
-                .orElseThrow(() -> new ResourceNotFoundException("User Role not found"));
+        Role retrievedVendorRole = checkIfVendorRoleExists(ROLE_VENDOR);
+        Role retrievedUserRole = checkIfUserRoleExists(ROLE_USER);
 
-        if (user.getRoles().contains(vendorRole)) {
+        if (currentUser.getRoles().contains(retrievedVendorRole)) {
             return "User is already a Vendor";
         }
 
-        List<Role> roles = new ArrayList<>(user.getRoles());
+        List<Role> roles = new ArrayList<>(currentUser.getRoles());
 
-        if (user.getRoles().contains(userRole)) {
-            roles.remove(userRole);
+        if (currentUser.getRoles().contains(retrievedUserRole)) {
+            roles.remove(retrievedUserRole);
         }
-        roles.add(vendorRole);
-        user.setRoles(roles);
+        roles.add(retrievedVendorRole);
+        currentUser.setRoles(roles);
 
-        userRepository.save(user);
+        userRepository.save(currentUser);
 
         return "User has become a Vendor";
+    }
+
+    private Role checkIfVendorRoleExists(String ROLE_VENDOR) {
+        return roleRepository.findByName(ROLE_VENDOR)
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor Role not found"));
+    }
+
+    private Role checkIfUserRoleExists(String ROLE_USER) {
+        return roleRepository.findByName(ROLE_USER)
+                .orElseThrow(() -> new ResourceNotFoundException("User Role not found"));
+
     }
 }

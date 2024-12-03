@@ -6,10 +6,10 @@ import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.model.User;
 import com.fultil.payload.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.UUID;
 
@@ -60,34 +60,14 @@ public class UserUtils {
      * @param data                   The data to include in the response.
      * @return The constructed response object.
      */
-    public static Response generateResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data, String path) {
-        Response response = Response.builder()
-                .statusCode(responseCodeAndMessage.status.value())
-                .status(responseCodeAndMessage.status)
-                .path(path)
-                .data(data)
-                .build();
-
-        log.info("Generated response: Response Code --> {}, Status --> {}, Path --> {}, Data --> {}",
-                response.getStatusCode(), response.getStatus(),
-                response.getPath(), convertObjectToJson(response.getData()));
-        return response;
-    }
-
     public static Response generateResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data) {
-        return generateResponse(responseCodeAndMessage, data, null);
+        return new Response(responseCodeAndMessage.status.value(), responseCodeAndMessage.name(), data);
     }
 
-    private static String convertObjectToJson(Object data) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(data);
-        } catch (Exception e) {
-            log.error("Error converting object to JSON", e);
-            return data.toString();
-        }
+    public static ResponseEntity<Response> getResponse(ResponseCodeAndMessage responseCodeAndMessage, Object data) {
+        Response response = new Response(responseCodeAndMessage.status.value(), responseCodeAndMessage.name(), data);
+        return new ResponseEntity<>(response, responseCodeAndMessage.status);
     }
-
     public static User getAuthenticatedUser() {
         log.info("Checking if user is authenticated");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

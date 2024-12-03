@@ -2,7 +2,6 @@ package com.fultil.controller;
 
 import com.fultil.enums.ResponseCodeAndMessage;
 import com.fultil.payload.request.OrderRequest;
-import com.fultil.payload.request.ReviewRequest;
 import com.fultil.payload.response.OrderResponse;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.Response;

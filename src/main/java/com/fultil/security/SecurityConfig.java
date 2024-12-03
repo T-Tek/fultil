@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/order/**").authenticated()
                         .anyRequest()
                         .authenticated()
-                )
+        )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -20,11 +20,18 @@ public class Cart {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_cart_user")
+    )
     private User user;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "cart_id")
+    @JoinColumn(
+            name = "cart_id",
+            foreignKey = @ForeignKey(name = "fk_cart_items_cart")
+    )
     private List<CartItems> cartItems = new ArrayList<>();
 
     public Cart(User user) {
@@ -38,4 +45,7 @@ public class Cart {
     public void clearItems() {
         this.cartItems.clear();
     }
+//    public void deleteItem(CartItems items){
+//        this.cartItems.remove(items.getProduct());
+//    }
 }

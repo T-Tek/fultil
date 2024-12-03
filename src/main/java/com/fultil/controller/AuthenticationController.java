@@ -9,10 +9,10 @@ import com.fultil.payload.response.Response;
 import com.fultil.service.AuthenticationService;
 import com.fultil.utils.UserUtils;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -23,17 +23,16 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public Response register(@RequestBody @Valid UserRequest userRequest) throws MessagingException {
+    public ResponseEntity<Response> register(@RequestBody @Valid UserRequest userRequest){
         String data = authenticationService.register(userRequest);
-        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data);
+        return UserUtils.getResponse(ResponseCodeAndMessage.SUCCESS, data);
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public Response login(@RequestBody @Valid LoginRequest loginRequest, HttpServletRequest request) {
+    public Response login(@RequestBody @Valid LoginRequest loginRequest) {
         AuthenticationResponse data = authenticationService.login(loginRequest);
-        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data, request.getRequestURI());
+        return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, data);
     }
 
     @GetMapping("/activate-account")

@@ -48,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private String activationUrl;
 
     @Override
-    public String register(UserRequest userRequest) throws MessagingException {
+    public String register(UserRequest userRequest){
         log.info("Request to create an account with email: " + userRequest.getEmail());
         validateUserInput(userRequest);
         try {
@@ -72,9 +72,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             sendValidationEmail(user);
             log.info("Account created with email: {}", userRequest.getEmail());
             return "Account created, activation email has been sent to ".concat(userRequest.getEmail());
-        } catch (Exception ex) {
+        } catch (MessagingException ex) {
             log.error("Error occurred while registering user: {}", ex.getMessage());
-            throw ex;
+            throw new BadRequestException("Unable to create user");
         }
     }
 

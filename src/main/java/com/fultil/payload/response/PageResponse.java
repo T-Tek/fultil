@@ -13,10 +13,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PageResponse<T> implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-
+public class PageResponse<T>  {
     private int totalElements;
     private int totalPages;
     private boolean hasNext;

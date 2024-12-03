@@ -11,7 +11,7 @@ import java.security.Principal;
 
 @Service
 public interface AuthenticationService {
-    String register(UserRequest userRequest) throws MessagingException;
+    String register(UserRequest userRequest);
     AuthenticationResponse login(LoginRequest loginRequest);
     void activateAccount(String token) throws MessagingException;
     void changePassword(ChangePasswordRequest request);

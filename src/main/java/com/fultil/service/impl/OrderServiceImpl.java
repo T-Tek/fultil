@@ -32,7 +32,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+//    private final ProductRepository productRepository;
     private final InventoryService inventoryService;
 
     @Override
@@ -84,22 +84,23 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderItems mapToOrderLineItem(OrderItemRequest orderItemRequest) {
-        Product product = productRepository.findById(orderItemRequest.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        InventoryResponse inventoryResponse = inventoryService.checkStock(product.getId(), orderItemRequest.getQuantity());
-        if (!inventoryResponse.isInStock()) {
-            throw new ResourceNotFoundException("Insufficient stock for product: " + product.getName());
-        }
-
-        inventoryService.updateStock(product.getId(), orderItemRequest.getQuantity());
-
-        return OrderItems.builder()
-                .product(product)
-                .quantity(orderItemRequest.getQuantity())
-                .price(product.getPrice())
-                .skuCode(product.getSkuCode())
-                .build();
+//        Product product = productRepository.findById(orderItemRequest.getProductId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+//
+//        InventoryResponse inventoryResponse = inventoryService.checkStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
+//        if (!inventoryResponse.isInStock()) {
+//            throw new ResourceNotFoundException("Insufficient stock for product: " + orderItemRequest.getProductId());
+//        }
+//
+//        inventoryService.updateStock(orderItemRequest.getProductId(), orderItemRequest.getQuantity());
+//
+//        return OrderItems.builder()
+//                .product(product)
+//                .quantity(orderItemRequest.getQuantity())
+//                .price(product.getPrice())
+//                .skuCode(product.getSkuCode())
+//                .build();
+        return null;
     }
 
     private OrderResponse mapToOrderResponse(Order order) {

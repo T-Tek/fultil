@@ -4,17 +4,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@ToString
 @Builder
 public class Response {
-    private int statusCode;
-    private HttpStatus status;
-    private String path;
+    private int code;
+    private String message;
     private Object data;
 }

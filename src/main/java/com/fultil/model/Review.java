@@ -2,6 +2,8 @@ package com.fultil.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -21,13 +23,24 @@ public class Review {
     private Integer rating;
 
     @Column(nullable = false)
+    @Lob
     private String message;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(
+            name = "product_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_review_product")
+    )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_review_user")
+    )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 }

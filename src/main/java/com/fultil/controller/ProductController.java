@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 
@@ -73,18 +72,18 @@ public class ProductController {
         return UserUtils.generateResponse(ResponseCodeAndMessage.SUCCESS, categories);
     }
 
-    //redis cache testing here
-    @GetMapping("/testCache")
-    @ResponseStatus(HttpStatus.OK)
-    public String testCache(@RequestParam int page, @RequestParam int size) {
-        long start = System.currentTimeMillis();
-        PageResponse<List<ProductResponse>> response1 = productService.getAllProducts(page, size);
-        long duration1 = System.currentTimeMillis() - start;
-
-        start = System.currentTimeMillis();
-        PageResponse<List<ProductResponse>> response2 = productService.getAllProducts(page, size);
-        long duration2 = System.currentTimeMillis() - start;
-
-        return "First call duration: " + duration1 + "ms, Second call duration: " + duration2 + "ms";
-    }
+//    //redis cache testing here
+//    @GetMapping("/testCache")
+//    @ResponseStatus(HttpStatus.OK)
+//    public String testCache(@RequestParam int page, @RequestParam int size) {
+//        long start = System.currentTimeMillis();
+//        PageResponse<List<ProductResponse>> response1 = productService.getAllProducts(page, size);
+//        long duration1 = System.currentTimeMillis() - start;
+//
+//        start = System.currentTimeMillis();
+//        PageResponse<List<ProductResponse>> response2 = productService.getAllProducts(page, size);
+//        long duration2 = System.currentTimeMillis() - start;
+//
+//        return "First call duration: " + duration1 + "ms, Second call duration: " + duration2 + "ms";
+//    }
 }

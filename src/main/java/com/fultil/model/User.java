@@ -39,20 +39,19 @@ public class User implements UserDetails, Principal {
     private boolean accountLocked;
     private boolean enabled;
 
-    @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
-    @JsonProperty("roles")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+            joinColumns = @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_roles_user")),
+            inverseJoinColumns = @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_user_roles_role"))
     )
     private List<Role> roles;
 
-    @OneToMany(fetch = FetchType.EAGER)
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
 
     @CreatedDate
@@ -80,7 +79,7 @@ public class User implements UserDetails, Principal {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return accountLocked;
     }
 
     @Override
@@ -90,7 +89,7 @@ public class User implements UserDetails, Principal {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
     @Override

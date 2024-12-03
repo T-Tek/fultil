@@ -6,10 +6,12 @@ import com.fultil.payload.request.CartItemsRequest;
 import com.fultil.payload.response.CartItemResponse;
 import com.fultil.payload.response.CartResponse;
 import com.fultil.payload.response.InventoryResponse;
+import com.fultil.repository.CartItemsRepository;
 import com.fultil.repository.CartRepository;
-import com.fultil.repository.ProductRepository;
+import com.fultil.service.CartItemsService;
 import com.fultil.service.CartService;
 import com.fultil.service.InventoryService;
+import com.fultil.service.ProductService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,18 +27,17 @@ import java.util.List;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
+    private final ProductService productService;
     private final InventoryService inventoryService;
+    private final CartItemsService cartItemsService;
+    private final CartItemsRepository cartItemsRepository;
 
     @Override
     public CartResponse addToCart(CartItemsRequest cartItemRequest) {
         log.info("Request to add product to cart with payload {}:", cartItemRequest);
         User user = UserUtils.getAuthenticatedUser();
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
-
-        Product product = productRepository.findById(cartItemRequest.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
+        Product product = productService.findProductById(cart.getId());
         InventoryResponse inventoryResponse = inventoryService.checkStock(product.getId(), cartItemRequest.getQuantity());
         if (!inventoryResponse.isInStock()) {
             throw new ResourceNotFoundException("Insufficient stock for product: ".concat(product.getName()));
@@ -72,6 +73,10 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    public String removeItemFromCart(Product product) {
+        return null;
+    }
+
     @Override
     public BigDecimal getTotalPriceOfCartItemsByCurrentUser() {
         CartResponse cartResponse = getCartByUser();
@@ -92,11 +97,6 @@ public class CartServiceImpl implements CartService {
     }
 
     private CartItemResponse mapToCartItemResponse(CartItems cartItems){
-        return new CartItemResponse(
-                cartItems.getId(),
-                cartItems.getProduct().getName(),
-                cartItems.getQuantity(),
-                cartItems.getProduct().getPrice()
-        );
+        return new CartItemResponse(cartItems.getId(), cartItems.getProduct().getName(), cartItems.getQuantity(), cartItems.getProduct().getPrice());
     }
 }

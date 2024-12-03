@@ -88,41 +88,31 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
-    //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #size")
+    //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #pageSize")
     @Override
-    public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int page, int size) {
-        User user = UserUtils.getAuthenticatedUser();
-        String userEmail = user.getEmail();
+    public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int pageNumber, int pageSize) {
+        String userEmail = UserUtils.getAuthenticatedUser().getEmail();
 
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
         Page<Product> productPage = null;
         if (Objects.isNull(name)) {
-            log.info("Request received to get products with page {}, and size {}. Requested by user with email '{}'.", page, size, userEmail);
+            log.info("Request received to get products with page {}, and pageSize {}. Requested by user with email '{}'.", pageNumber, pageSize, userEmail);
             productPage = productRepository.findAllByCreatedBy(userEmail, pageable);
         } else {
-            log.info("Request received to get products with name '{}', page {}, and size {}. Requested by user with email '{}'.", name, page, size, userEmail);
+            log.info("Request received to get products with name '{}', page {}, and pageSize {}. Requested by user with email '{}'.", name, pageNumber, pageSize, userEmail);
             productPage = productRepository.findProductByCreator(name, userEmail, pageable);
-        }
-        if (productPage.isEmpty()) {
-            log.warn("No products found.");
-            throw new ResourceNotFoundException("No record found");
         }
         List<ProductResponse> products = new ArrayList<>();
 
         for (Product product : productPage) {
             products.add(convertToResponseDto(product));
         }
-        PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
-
-        pageResponse.setTotalElements(productPage.getNumberOfElements());
-        pageResponse.setTotalPages(productPage.getTotalPages());
-        pageResponse.setHasNext(productPage.hasNext());
-        pageResponse.setContent(Map.of("products", products));
-
+        if (products.isEmpty()) {
+            log.warn("No products found.");
+            throw new ResourceNotFoundException("No record found");
+        }
         log.info("Retrieved {} products for name '{}' (Page {}/{}).", products.size(), name, productPage.getNumber(), productPage.getTotalPages());
-
-        return pageResponse;
+        return new PageResponse<>(productPage.getNumberOfElements(), productPage.getTotalPages(), productPage.hasNext(),Map.of("products", products));
     }
 
 
@@ -219,6 +209,12 @@ public class ProductServiceImpl implements ProductService {
         log.info("Product with id '{}' is updated and saved", id);
 
         return convertToResponseDto(savedProduct);
+    }
+
+    @Override
+    public Product findProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
 

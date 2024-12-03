@@ -18,14 +18,21 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String orderNumber;
+
     @CreationTimestamp
     private LocalDateTime createdDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItems> orderLineItems;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_order_user")
+    )
     private User user; // the person who placed the order
 }
+
