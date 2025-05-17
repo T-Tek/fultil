@@ -7,7 +7,9 @@ import com.fultil.payload.request.ReviewRequest;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.payload.response.ReviewResponse;
 import com.fultil.repository.ReviewRepository;
+import com.fultil.service.ProductService;
 import com.fultil.service.ReviewService;
+import com.fultil.service.UserService;
 import com.fultil.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +28,21 @@ import java.util.Map;
 @Service
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository repository;
+    private final ProductService productService;
+    private final UserService userService;
 
     @Override
     public void reviewProduct(ReviewRequest reviewRequest) {
-        User user = UserUtils.getAuthenticatedUser();
+        Long productId = productService.findProductById(reviewRequest.getProductId()).getId();
+   //     String name = userService.getUserById(reviewRequest.get)
+
+        User user = UserUtils.getCurrentUser();
         Review newReview = Review.builder()
                 .title(reviewRequest.getTitle())
                 .message(reviewRequest.getMessage())
                 .rating(reviewRequest.getRating())
-                .product(reviewRequest.getProduct())
-                .user(user)
+                .productId(productId)
+                .userId(user.getId())
                 .build();
         repository.save(newReview);
     }

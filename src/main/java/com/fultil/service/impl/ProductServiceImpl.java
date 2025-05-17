@@ -39,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
         log.info("Received request to create product with name: {} by: {}", request.getName(), user.getName());
 
         String categoryName = request.getCategory();
@@ -91,7 +91,7 @@ public class ProductServiceImpl implements ProductService {
     //  @Cacheable(value = "items", key = "#name + '-' + #page + '-' + #pageSize")
     @Override
     public PageResponse<List<ProductResponse>> getProductsByCreator(String name, int pageNumber, int pageSize) {
-        String userEmail = UserUtils.getAuthenticatedUser().getEmail();
+        String userEmail = UserUtils.getCurrentUser().getEmail();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
         Page<Product> productPage = null;
@@ -164,6 +164,10 @@ public class ProductServiceImpl implements ProductService {
         for (Product product : productPage) {
             productResponseList.add(convertToResponseDto(product));
         }
+        productPage.stream()
+                .map(product -> convertToResponseDto(product))
+                .forEach(pro -> productResponseList.add(pro) );
+
         PageResponse<List<ProductResponse>> pageResponse = new PageResponse<>();
 
         pageResponse.setTotalElements(productPage.getNumberOfElements());
@@ -181,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long id, ProductRequest productRequest) {
         log.info("Request to update Product with id: {} ", id);
 
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
 
         log.info("Received request to update product with name: {} by: {}", productRequest.getName(), user.getName());
 
@@ -228,7 +232,7 @@ public class ProductServiceImpl implements ProductService {
                 .status(product.getProductStatus())
                 .description(product.getDescription())
                 .vendor(product.getVendor().getFirstName())
-                .reviews(mapToReviewResponseList(product.getReviews()))
+              //  .reviews(mapToReviewResponseList(product.getReviews()))
                 .build();
     }
 

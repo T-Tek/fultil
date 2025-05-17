@@ -33,18 +33,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             log.warn("User '{}' is disabled", username);
             throw new BadRequestException("User account is disabled");
         }
-        if (userDetails.isAccountNonLocked()) {
+
+        if (!userDetails.isAccountNonLocked()) {
             log.warn("User '{}' is locked", username);
             throw new BadRequestException("Account locked, contact admin");
         }
 
-        if (passwordEncoder.matches(password, userDetails.getPassword())) {
-            log.info("User '{}' authenticated successfully", username);
-            return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        } else {
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             log.warn("Incorrect password for user '{}'", username);
             throw new BadRequestException("Incorrect password");
         }
+
+        log.info("User '{}' authenticated successfully", username);
+        return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
     }
 
     @Override

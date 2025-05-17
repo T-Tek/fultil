@@ -15,4 +15,7 @@ public interface AuthenticationService {
     AuthenticationResponse login(LoginRequest loginRequest);
     void activateAccount(String token) throws MessagingException;
     void changePassword(ChangePasswordRequest request);
+    default void testDefaultMethod(){
+        System.out.println("testDefaultMethod");
+    }
 }

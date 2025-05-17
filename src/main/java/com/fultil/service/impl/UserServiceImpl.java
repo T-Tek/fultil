@@ -4,6 +4,7 @@ import com.fultil.model.Role;
 import com.fultil.model.User;
 import com.fultil.enums.RoleType;
 import com.fultil.exceptions.ResourceNotFoundException;
+import com.fultil.payload.response.UserResponse;
 import com.fultil.repository.RoleRepository;
 import com.fultil.repository.UserRepository;
 import com.fultil.service.UserService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +26,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String becomeVendor() {
-        User currentUser = UserUtils.getAuthenticatedUser();
+        User currentUser = UserUtils.getCurrentUser();
         log.info("Request to become a Vendor by {}", currentUser.getEmail());
 
         String ROLE_VENDOR = RoleType.ROLE_VENDOR.name();
@@ -48,6 +50,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(currentUser);
 
         return "User has become a Vendor";
+    }
+
+    @Override
+    public UserResponse getUserById(Long id) {
+        String firstName = userRepository
+                .findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found: "))
+                .getFirstName();
+        return new UserResponse(firstName);
     }
 
     private Role checkIfVendorRoleExists(String ROLE_VENDOR) {

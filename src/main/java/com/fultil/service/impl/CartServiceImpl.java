@@ -35,7 +35,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse addToCart(CartItemsRequest cartItemRequest) {
         log.info("Request to add product to cart with payload {}:", cartItemRequest);
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
         Product product = productService.findProductById(cart.getId());
         InventoryResponse inventoryResponse = inventoryService.checkStock(product.getId(), cartItemRequest.getQuantity());
@@ -55,7 +55,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartResponse getCartByUser() {
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
         log.info("Request to get cart by {}", user);
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));
 
@@ -64,7 +64,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void clearCart() {
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
         log.info("Request to clear cart by {}", user);
 
         Cart cart = cartRepository.findByUser(user).orElse(new Cart(user));

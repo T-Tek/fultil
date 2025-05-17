@@ -4,12 +4,10 @@ import com.fultil.model.*;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.payload.request.OrderItemRequest;
 import com.fultil.payload.request.OrderRequest;
-import com.fultil.payload.response.InventoryResponse;
 import com.fultil.payload.response.OrderItemsResponse;
 import com.fultil.payload.response.OrderResponse;
 import com.fultil.payload.response.PageResponse;
 import com.fultil.repository.OrderRepository;
-import com.fultil.repository.ProductRepository;
 import com.fultil.service.InventoryService;
 import com.fultil.service.OrderService;
 import com.fultil.utils.UserUtils;
@@ -37,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void placeOrder(OrderRequest orderRequest) {
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
 
         log.info("Request to place order with {} line items.", orderRequest.getOrderItems().size());
 
@@ -61,7 +59,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResponse<List<OrderResponse>> getAllOrdersByCurrentUser(int page, int size) {
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
         log.info("Request to get orders placed by {}", user.getEmail());
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));

@@ -48,9 +48,9 @@ public class Product extends Auditable<String> {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private List<Review> reviews;
+//    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+//    private List<Review> reviews;
 
     public ProductStatus getProductStatus() {
         return quantity < 1 ? ProductStatus.OUT_OF_STOCK : ProductStatus.IN_STOCK;

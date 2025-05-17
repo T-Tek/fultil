@@ -50,9 +50,9 @@ public class User implements UserDetails, Principal {
     )
     private List<Role> roles;
 
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews;
+//
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Review> reviews;
 
     @CreatedDate
     private LocalDate createdDate;

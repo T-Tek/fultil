@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String register(UserRequest userRequest){
-        log.info("Request to create an account with email: " + userRequest.getEmail());
+        log.info("Request to create an account with email: {}", userRequest.getEmail());
         validateUserInput(userRequest);
         try {
             List<Role> roles = new ArrayList<>();
@@ -92,9 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         claims.put("fullName", user.getFirstName());
         String jwtToken = jwtService.generateToken(claims, user);
 
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities())
-        );
+        UserUtils.setCurrentUser(user);
         log.info("JWT token generated for user '{}':", user.getFirstName());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
@@ -122,7 +119,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void changePassword(ChangePasswordRequest request) {
         log.info("Request to change password..........");
-        User user = UserUtils.getAuthenticatedUser();
+        User user = UserUtils.getCurrentUser();
 
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
             throw new BadRequestException("New password and confirm password do not match");
@@ -184,5 +181,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private boolean isUserExists(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public void testDefaultMethod() {
+        System.out.println("calling default method in a class");
     }
 }

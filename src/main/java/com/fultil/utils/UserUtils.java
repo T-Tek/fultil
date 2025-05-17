@@ -1,12 +1,13 @@
 package com.fultil.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fultil.enums.ResponseCodeAndMessage;
+import com.fultil.exceptions.BadRequestException;
 import com.fultil.exceptions.ResourceNotFoundException;
 import com.fultil.model.User;
 import com.fultil.payload.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -68,14 +69,20 @@ public class UserUtils {
         Response response = new Response(responseCodeAndMessage.status.value(), responseCodeAndMessage.name(), data);
         return new ResponseEntity<>(response, responseCodeAndMessage.status);
     }
-    public static User getAuthenticatedUser() {
-        log.info("Checking if user is authenticated");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResourceNotFoundException("User is not authenticated, cannot perform operation");
-        }
-        return (User) authentication.getPrincipal();
+
+    public static void setCurrentUser(User user) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
     }
+
+    public static User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new BadRequestException("No authenticated user");
+        }
+        return (User) auth.getPrincipal();
+    }
+
 }
 
 
